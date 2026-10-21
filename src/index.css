@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  font-size: 14px;
+}
+
+body {
+  font-size: 14px !important;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography scaling: Body 14px, Subheadings 16px, Headings 19px */
+p, span, li, button, input, select, textarea {
+  font-size: 14px;
+}
+
+h1, h2, h3 {
+  font-size: 19px !important;
+  line-height: 1.35;
+}
+
+h4, h5, h6 {
+  font-size: 16px !important;
+  line-height: 1.35;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "SarkariPulse - Government Job Alerts & Daily News",
+  "description": "Real-time government job vacancies, admit cards, exam news, syllabus summaries, AI eligibility checker, and clean notification alert system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
