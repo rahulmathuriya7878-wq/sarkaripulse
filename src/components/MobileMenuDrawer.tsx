@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Bot,
   Flame,
+  Settings,
 } from 'lucide-react';
 import { JobCategory } from '../types';
 
@@ -29,6 +30,7 @@ interface MobileMenuDrawerProps {
   onOpenQuiz: () => void;
   onOpenWriteBlog: () => void;
   onOpenChat: () => void;
+  onOpenAdminPanel: () => void;
   onSelectSectorFilter?: (sector: JobCategory) => void;
 }
 
@@ -56,6 +58,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   onOpenQuiz,
   onOpenWriteBlog,
   onOpenChat,
+  onOpenAdminPanel,
   onSelectSectorFilter,
 }) => {
   if (!isOpen) return null;
@@ -187,6 +190,20 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 <div className="flex items-center gap-2.5">
                   <Bot className="w-4 h-4 text-emerald-400" />
                   <span className="font-bold">सरकारी AI सलाहकार</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenAdminPanel();
+                }}
+                className="w-full p-2.5 rounded-xl text-left flex items-center justify-between hover:bg-emerald-50 transition-colors cursor-pointer bg-slate-50 text-slate-900 border border-slate-200"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Settings className="w-4 h-4 text-emerald-700" />
+                  <span className="font-bold">प्रशासनिक पैनल (Admin Panel)</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>

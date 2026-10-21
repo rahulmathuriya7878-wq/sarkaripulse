@@ -32,6 +32,7 @@ import { DailyQuizModal } from './components/DailyQuizModal';
 import { AIChatDrawer } from './components/AIChatDrawer';
 import { PolicyModal } from './components/PolicyModal';
 import { SearchModal } from './components/SearchModal';
+import { AdminPanel } from './components/AdminPanel';
 import { FastUpdatesGrid } from './components/FastUpdatesGrid';
 import { fetchLiveVacanciesFromRSS, scrapeVacancyFromUrl } from './services/jobScraperService';
 
@@ -129,6 +130,7 @@ export default function App() {
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   // Alias vacancies to jobs for dynamic state management
   const vacancies = jobs;
@@ -684,6 +686,7 @@ export default function App() {
         onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenWriteBlog={() => setIsWriteModalOpen(true)}
         onOpenChat={() => setIsChatOpen(true)}
+        onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
         onSelectSectorFilter={(s) => {
           setSelectedSector(s);
           setSelectedJob(null);
@@ -813,13 +816,18 @@ export default function App() {
         onSelectJob={(job) => {
           setSelectedJob(job);
           setSelectedBlog(null);
-          setActiveTab('vacancies');
+          setActiveTab('results');
         }}
         onSelectBlog={(blog) => {
           setSelectedBlog(blog);
           setSelectedJob(null);
           setActiveTab('blogs');
         }}
+      />
+      <AdminPanel 
+        isOpen={isAdminPanelOpen} 
+        onClose={() => setIsAdminPanelOpen(false)}
+        onOpenWriteBlog={() => setIsWriteModalOpen(true)}
       />
       <FloatingShareButton 
         title="SarkariPulse - Job Alerts & Updates" 
