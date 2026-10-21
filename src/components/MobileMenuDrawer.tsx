@@ -20,8 +20,8 @@ import { JobCategory } from '../types';
 interface MobileMenuDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  activeTab: 'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat';
-  setActiveTab: (tab: 'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat') => void;
+  activeTab: 'blogs' | 'results' | 'eligibility' | 'chat';
+  setActiveTab: (tab: 'blogs' | 'results' | 'eligibility' | 'chat') => void;
   unreadCount: number;
   bookmarksCount: number;
   onOpenNotifications: () => void;
@@ -112,19 +112,6 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               </button>
 
               <button
-                onClick={() => handleNavigate('vacancies')}
-                className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-colors cursor-pointer ${
-                  activeTab === 'vacancies' ? 'bg-emerald-50 text-emerald-800 font-extrabold' : 'hover:bg-slate-100'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Briefcase className="w-4 h-4 text-emerald-600" />
-                  <span>सरकारी नौकरियां (Vacancies)</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </button>
-
-              <button
                 onClick={() => handleNavigate('results')}
                 className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-colors cursor-pointer ${
                   activeTab === 'results' ? 'bg-emerald-50 text-emerald-800 font-extrabold' : 'hover:bg-slate-100'
@@ -203,6 +190,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
+
             </div>
           </div>
 

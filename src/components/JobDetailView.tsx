@@ -524,7 +524,7 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
       {/* Related Job Openings */}
       {relatedJobs.length > 0 && (
         <div className="space-y-4 pt-2">
-          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">इसी विभाग की अन्य सरकारी नौकरियां (Related Jobs)</h3>
+          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">इसी विभाग की अन्य वैकेंसियां (Related Jobs)</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {relatedJobs.map((rj) => (
               <div

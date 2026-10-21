@@ -82,7 +82,6 @@ const SECTORS: (JobCategory | 'All Sectors')[] = [
 const BLOG_CATEGORIES: (BlogCategory | 'All Blogs')[] = [
   'All Blogs',
   'Job Notification',
-  'Breaking News',
   'Exam Strategy & Prep',
   'Syllabus Breakdown',
   'Salary & DA Analysis',
@@ -91,7 +90,7 @@ const BLOG_CATEGORIES: (BlogCategory | 'All Blogs')[] = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat'>('blogs');
+  const [activeTab, setActiveTab] = useState<'blogs' | 'results' | 'eligibility' | 'chat'>('blogs');
   const [jobs, setJobs] = useState<JobAlert[]>(INITIAL_JOB_ALERTS);
   const [news, setNews] = useState<NewsItem[]>(INITIAL_NEWS_ITEMS);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(INITIAL_BLOG_POSTS);
@@ -171,6 +170,8 @@ export default function App() {
           });
           setRssLastFetchedTime(new Date().toLocaleTimeString());
           setScraperStatusMsg(`${res.count} लाइव वैकेंसियां RSS फ़ीड्स से सफलतापूर्वक सिंक की गईं!`);
+        } else if (res.message) {
+          setScraperStatusMsg(res.message);
         } else {
           setScraperStatusMsg('सभी वैकेंसियां अपडेट हैं। फ़ीड में कोई नई भर्ती नहीं मिली।');
         }
@@ -179,10 +180,10 @@ export default function App() {
       }
     } catch (err: any) {
       console.error('RSS Fetch error:', err);
-      const errorMessage = err.message || '';
+      const errorMessage = JSON.stringify(err);
       const isQuotaExceeded = errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED');
       setScraperStatusMsg(isQuotaExceeded 
-        ? 'सेवा अस्थायी रूप से व्यस्त है। कृपया कुछ समय बाद पुनः प्रयास करें।' 
+        ? 'AI सेवा कोटा समाप्त: नई भर्तियां अगले 1-2 घंटों में उपलब्ध होंगी।' 
         : 'RSS फ़ीड सिंक करने में समस्या आई।');
     } finally {
       setIsRssFetching(false);
@@ -231,7 +232,16 @@ export default function App() {
     setNotifications(getStoredNotifications());
     setPreferences(getStoredPreferences());
     setBookmarks(getStoredBookmarks());
-    handleSyncRssVacancies();
+    
+    /*
+    const lastRssSync = localStorage.getItem('sarkaripulse_last_rss_sync_v1');
+    const now = Date.now();
+    // Only sync if last sync was > 1 hour ago (3600000 ms)
+    if (!lastRssSync || now - parseInt(lastRssSync) > 3600000) {
+      handleSyncRssVacancies();
+      localStorage.setItem('sarkaripulse_last_rss_sync_v1', now.toString());
+    }
+    */
   }, []);
 
   const handleToggleBookmark = (jobId: string) => {
@@ -415,57 +425,9 @@ export default function App() {
       );
     }
 
-    if (activeTab === 'vacancies' || activeTab === 'results') {
+    if (activeTab === 'results') {
       return (
         <div key="view-container-vacancies-feed" className="space-y-6">
-          {/* RSS Auto-Scraper Service Live Status Header */}
-          <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <Rss className="w-5 h-5 animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-black tracking-tight">RSS ऑटो-स्क्रैपर व लाइव फ़ीड सर्विस</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
-                    सक्रिय (Active)
-                  </span>
-                  <span className="text-xs text-slate-400 font-bold">({vacancies.length} वैकेंसियां उपलब्ध)</span>
-                </div>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  सरकारी राजपत्रों व ऑटोमेटेड RSS फ़ीड्स से स्वचालित लाइव भर्तियां वैकेंसियों में जोड़ी जाती हैं।
-                  {rssLastFetchedTime && ` (अंतिम सिंक: ${rssLastFetchedTime})`}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleSyncRssVacancies()}
-                disabled={isRssFetching}
-                className="px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 text-white rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isRssFetching ? 'animate-spin' : ''}`} />
-                <span>{isRssFetching ? 'RSS सिंक हो रहा है...' : 'RSS फ़ीड रिफ्रेश करें'}</span>
-              </button>
-
-              <button
-                onClick={() => setIsScraperModalOpen(true)}
-                className="px-3.5 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5"
-              >
-                <Globe className="w-3.5 h-3.5 text-sky-400" />
-                <span>कस्टम URL स्क्रैपर</span>
-              </button>
-            </div>
-          </div>
-
-          {scraperStatusMsg && (
-            <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 animate-fade-in">
-              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{scraperStatusMsg}</span>
-            </div>
-          )}
-
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
               <div className="relative flex-1">

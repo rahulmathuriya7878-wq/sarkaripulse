@@ -12,8 +12,8 @@ import {
 import { JobCategory } from '../types';
 
 interface HeaderProps {
-  activeTab: 'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat';
-  setActiveTab: (tab: 'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat') => void;
+  activeTab: 'blogs' | 'results' | 'eligibility' | 'chat';
+  setActiveTab: (tab: 'blogs' | 'results' | 'eligibility' | 'chat') => void;
   unreadCount: number;
   onOpenNotifications: () => void;
   onOpenSettings: () => void;
@@ -87,15 +87,6 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             समाचार व ब्लॉग
-          </button>
-
-          <button
-            onClick={() => setActiveTab('vacancies')}
-            className={`px-3 py-2 rounded-xl transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeTab === 'vacancies' ? 'text-emerald-700 bg-emerald-50 font-extrabold' : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            नवीनतम सरकारी नौकरियां
           </button>
 
           <button

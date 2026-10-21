@@ -2,7 +2,7 @@ import { BlogPost } from '../types';
 
 export const INITIAL_BLOG_POSTS: BlogPost[] = [
   {
-    id: 'blog-upsc-cse-2026-strategy',
+    id: 'blog-railway-age-relaxation-2026',
     slug: 'upsc-civil-services-2026-notification-out-strategy-guide',
     title: 'UPSC सिविल सेवा परीक्षा 2026 अधिसूचना जारी: 1,056 पद, श्रेणीवार आयु छूट, नया OTR e-KYC नियम व विस्तृत तैयारी रणनीति',
     subtitle: 'प्रारंभिक परीक्षा जीएस पेपर-1, सीसैट (CSAT) 33% क्वालिफाइंग अंक, विषयवार बुकलिस्ट और 5 वर्षों के कट-ऑफ रुझानों का संपूर्ण विश्लेषण।',
@@ -19,7 +19,6 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     likesCount: 2190,
     isFeatured: true,
     isTrending: true,
-    isBreaking: true,
     summary: 'संघ लोक सेवा आयोग ने IAS, IPS, IFS और IRS सहित विभिन्न प्रशासनिक सेवाओं में 1,056 रिक्तियों की अधिसूचना प्रकाशित कर दी है। अंतिम तिथि 15 नवंबर 2026 है।',
     keyTakeaways: [
       'कुल विज्ञापित पद: 1,056 रिक्तियां (40 पद दिव्यांग PwBD अभ्यर्थियों हेतु आरक्षित)',
@@ -167,7 +166,6 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     likesCount: 2840,
     isFeatured: false,
     isTrending: true,
-    isBreaking: false,
     summary: 'रेल मंत्रालय ने लोको पायलट (ALP), तकनीशियन व एनटीपीसी पदों पर ऊपरी आयु सीमा में 3 साल की एकमुश्त छूट देने का बजट राजपत्र आदेश जारी कर दिया है।',
     keyTakeaways: [
       'सामान्य व ईडब्ल्यूएस वर्ग हेतु ऊपरी आयु सीमा: 30 वर्ष से बढ़ाकर 33 वर्ष की गई',
@@ -287,7 +285,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     likesCount: 1650,
     isFeatured: false,
     isTrending: true,
-    isBreaking: false,
+
     summary: 'कर्मचारी चयन आयोग ने स्नातक स्तरीय (CGL) 17,727 पदों हेतु टियर-1 परीक्षा पैटर्न व पद-वार योग्यता मानदंड का पूरा विवरण प्रकाशित किया है।',
     keyTakeaways: [
       'कुल विज्ञापित पद: 17,727 रिक्तियां (ग्रुप बी एवं ग्रुप सी केंद्र सरकार के मंत्रालयों में)',
@@ -407,7 +405,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     likesCount: 3510,
     isFeatured: false,
     isTrending: true,
-    isBreaking: false,
+
     summary: 'केंद्रीय कैबिनेट द्वारा महंगाई भत्ते को 50% से बढ़ाकर 54% करने के ऐतिहासिक फैसले से 1.1 करोड़ कर्मचारियों व पेंशनभोगियों के वेतन में भारी बढ़ोतरी हुई है।',
     keyTakeaways: [
       'महंगाई भत्ता (DA): 50% से बढ़कर हुआ 54% (4 प्रतिशत अंक की सीधी बढ़ोतरी)',
@@ -519,7 +517,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     likesCount: 1420,
     isFeatured: false,
     isTrending: false,
-    isBreaking: false,
+
     summary: 'एसबीआई व आईबीपीएस पीओ परीक्षा 2026 हेतु अनुभागीय कट-ऑफ, डेटा इंटरप्रिटेशन ट्रिक्स व इंटरव्यू तैयारी का प्रामाणिक मार्गदर्शन।',
     keyTakeaways: [
       '12th Bipartite Settlement सैलरी: बैंक पीओ की शुरुआती इन-हैंड सैलरी ₹65,000 से बढ़कर ₹74,000/माह हुई',

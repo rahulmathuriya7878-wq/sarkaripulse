@@ -31,29 +31,9 @@ export const FastUpdatesGrid: React.FC<FastUpdatesGridProps> = ({ regularBlogPos
         </div>
       </div>
 
-      {/* Right Column: Trending Ticker & AI Assistant Box */}
+      {/* Right Column: Trending Ticker */}
       <div className="space-y-5">
-        {/* AI Eligibility Quick Widget */}
-        <div className="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl p-5 shadow-md space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span>AI Sarkari Advisor</span>
-          </div>
-          <h3 className="text-base font-extrabold leading-snug">Check Which Govt Jobs You Qualify For</h3>
-          <p className="text-xs text-slate-300 leading-relaxed font-normal">
-            Input age, degree, and category to analyze matching UPSC, SSC, RRB & Banking openings.
-          </p>
-          <button
-            onClick={() => {
-              setSelectedJob(null);
-              setSelectedBlog(null);
-              setActiveTab('eligibility');
-            }}
-            className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs rounded-xl transition-colors shadow-xs cursor-pointer"
-          >
-            Launch Eligibility Evaluator →
-          </button>
-        </div>
+        
       </div>
     </div>
   );

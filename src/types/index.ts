@@ -65,7 +65,6 @@ export interface NewsItem {
 }
 
 export type BlogCategory =
-  | 'Breaking News'
   | 'Job Notification'
   | 'Exam Strategy & Prep'
   | 'Syllabus Breakdown'
@@ -101,7 +100,6 @@ export interface BlogPost {
   likesCount: number;
   isFeatured?: boolean;
   isTrending?: boolean;
-  isBreaking?: boolean;
   summary: string;
   keyTakeaways: string[];
   contentHtml: string;

@@ -59,7 +59,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="सरकारी नौकरियां, UPSC, SSC, कटऑफ, परीक्षा तिथियां खोजें..."
+            placeholder="वैकेंसियां, UPSC, SSC, कटऑफ, परीक्षा तिथियां खोजें..."
             className="w-full bg-transparent text-sm sm:text-base font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none"
           />
           {query && (
@@ -140,7 +140,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             <div className="space-y-2.5">
               <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5 px-1">
                 <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
-                <span>सरकारी नौकरियां व वैकेंसियां ({filteredJobs.length})</span>
+                <span>वैकेंसियां ({filteredJobs.length})</span>
               </h4>
               <div className="space-y-2">
                 {filteredJobs.slice(0, 8).map((job) => (

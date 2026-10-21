@@ -10,7 +10,6 @@ interface BlogWriteModalProps {
 
 const CATEGORIES: BlogCategory[] = [
   'Job Notification',
-  'Breaking News',
   'Exam Strategy & Prep',
   'Syllabus Breakdown',
   'Salary & DA Analysis',
