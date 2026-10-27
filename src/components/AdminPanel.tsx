@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { BlogPost, JobAlert } from '../types';
 import {
   X,
   PenSquare,
@@ -13,6 +14,8 @@ import {
   ShieldCheck,
   Zap,
   Lock,
+  Trash2,
+  Search,
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -25,6 +28,10 @@ interface AdminPanelProps {
   onSyncFromRajasthanVacancy?: () => void;
   isRajasthanSyncing?: boolean;
   onLockAdmin?: () => void;
+  allPosts?: BlogPost[];
+  allJobs?: JobAlert[];
+  onDeleteBlog?: (id: string) => void;
+  onDeleteJob?: (id: string) => void;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -37,7 +44,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onSyncFromRajasthanVacancy,
   isRajasthanSyncing = false,
   onLockAdmin,
+  allPosts = [],
+  allJobs = [],
+  onDeleteBlog,
+  onDeleteJob,
 }) => {
+  const [activeTab, setActiveTab] = useState<'tools' | 'manage'>('tools');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [manageType, setManageType] = useState<'blogs' | 'jobs'>('blogs');
   if (!isOpen) return null;
 
   return (
@@ -83,193 +97,347 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
 
-        {/* Featured Section: AI Blog Writer Studio */}
-        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-emerald-900 via-teal-900 to-slate-900 text-white p-5 sm:p-6 shadow-lg border border-emerald-800/60">
-          <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-2 max-w-md">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-extrabold uppercase tracking-wide border border-emerald-500/30">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
-                <span>Next-Gen Editorial Suite</span>
-              </div>
-              <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
-                AI ब्लॉग लेखक स्टूडियो (News Blogger Studio)
-              </h3>
-              <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-normal">
-                1-क्लिक में आधिकारिक हिंदी भाषा शैली में जॉब अधिसूचना, परीक्षा रणनीति, कट-ऑफ विश्लेषण, 
-                FAQs, Key Takeaways और Google SERP SEO पूर्वावलोकन तैयार करें।
-              </p>
-            </div>
+        {/* Admin Navigation Tabs */}
+        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl text-xs font-bold">
+          <button
+            onClick={() => setActiveTab('tools')}
+            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === 'tools'
+                ? 'bg-emerald-600 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Cpu className="w-4 h-4" />
+            <span>संपादकीय टूल्स व AI</span>
+          </button>
 
-            <button
-              onClick={() => {
-                onClose();
-                onOpenWriteBlog();
-              }}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition-transform active:scale-95 cursor-pointer shrink-0"
-            >
-              <PenSquare className="w-4 h-4 text-slate-950" />
-              <span>स्टूडियो खोलें (Launch Studio)</span>
-            </button>
-          </div>
-
-          {/* Feature Badges */}
-          <div className="mt-5 pt-4 border-t border-emerald-800/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-emerald-200 font-semibold">
-            <div className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>3 AI टोन विकल्प</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <BookOpen className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-              <span>रेडीमेड टेम्पलेट्स</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-sky-300 shrink-0" />
-              <span>SEO मेटा व SERP</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>ऑटो-ड्राफ्ट सेव</span>
-            </div>
-          </div>
+          <button
+            onClick={() => setActiveTab('manage')}
+            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === 'manage'
+                ? 'bg-red-600 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>पोस्ट डिलीट व प्रबंधन ({allPosts.length + allJobs.length})</span>
+          </button>
         </div>
 
-        {/* Quick Stats & System Status */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-              प्रकाशित ब्लॉग पोस्ट
-            </span>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-2xl font-black text-slate-900">{totalBlogs}</span>
-              <span className="text-[11px] font-bold text-emerald-600">लाइव</span>
-            </div>
-          </div>
+        {/* Tab 1: Editorial Tools & Ingestion */}
+        {activeTab === 'tools' && (
+          <div className="space-y-6">
+            {/* Featured Section: AI Blog Writer Studio */}
+            <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-emerald-900 via-teal-900 to-slate-900 text-white p-5 sm:p-6 shadow-lg border border-emerald-800/60">
+              <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-2 max-w-md">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-extrabold uppercase tracking-wide border border-emerald-500/30">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
+                    <span>Next-Gen Editorial Suite</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                    AI ब्लॉग लेखक स्टूडियो (News Blogger Studio)
+                  </h3>
+                  <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-normal">
+                    1-क्लिक में आधिकारिक हिंदी भाषा शैली में जॉब अधिसूचना, परीक्षा रणनीति, कट-ऑफ विश्लेषण, 
+                    FAQs, Key Takeaways और Google SERP SEO पूर्वावलोकन तैयार करें।
+                  </p>
+                </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-              Google AdSense ID
-            </span>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="text-xs font-mono font-bold text-slate-800 truncate" title="ca-pub-3176571184961509">
-                ca-pub-31765...
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenWriteBlog();
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition-transform active:scale-95 cursor-pointer shrink-0"
+                >
+                  <PenSquare className="w-4 h-4 text-slate-950" />
+                  <span>स्टूडियो खोलें (Launch Studio)</span>
+                </button>
+              </div>
+
+              {/* Feature Badges */}
+              <div className="mt-5 pt-4 border-t border-emerald-800/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-emerald-200 font-semibold">
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>3 AI टोन विकल्प</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                  <span>रेडीमेड टेम्पलेट्स</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+                  <span>SEO मेटा व SERP</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>ऑटो-ड्राफ्ट सेव</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats & System Status */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                  प्रकाशित ब्लॉग पोस्ट
+                </span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-black text-slate-900">{totalBlogs}</span>
+                  <span className="text-[11px] font-bold text-emerald-600">लाइव</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                  Google AdSense ID
+                </span>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs font-mono font-bold text-slate-800 truncate" title="ca-pub-3176571184961509">
+                    ca-pub-31765...
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                  सत्यापन (Verification)
+                </span>
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-emerald-700">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Google Verified</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Web Ingestion Section: SarkariResult & RajasthanVacancy */}
+            <div className="space-y-3">
+              {/* SarkariResult Live Ingestion */}
+              <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-sky-600 animate-ping inline-block" />
+                    <h4 className="text-xs font-black text-sky-950 uppercase tracking-wide">
+                      SarkariResult.com लाइव डेटा सिंक
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-sky-800 font-medium">
+                    SarkariResult की नवीनतम भर्तियों से 1-क्लिक में नए लेख सिंक करें और आधिकारिक वेबसाइट लिंक के साथ जोड़ें।
+                  </p>
+                </div>
+                {onSyncFromSarkariResult && (
+                  <button
+                    onClick={onSyncFromSarkariResult}
+                    disabled={isSyncing}
+                    className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    <span>{isSyncing ? 'सिंक हो रहा है...' : 'SarkariResult सिंक करें'}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* RajasthanVacancy Live Ingestion */}
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping inline-block" />
+                    <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide">
+                      RajasthanVacancy.com लाइव डेटा सिंक
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-amber-900 font-medium">
+                    राजस्थान की समस्त सरकारी भर्तियों (RPSC, RSMSSB CET, राजस्थान पुलिस, पटवारी व शिक्षक भर्ती) से 1-क्लिक सिंक।
+                  </p>
+                </div>
+                {onSyncFromRajasthanVacancy && (
+                  <button
+                    onClick={onSyncFromRajasthanVacancy}
+                    disabled={isRajasthanSyncing}
+                    className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${isRajasthanSyncing ? 'animate-spin' : ''}`} />
+                    <span>{isRajasthanSyncing ? 'राजस्थान डेटा सिंक हो रहा है...' : 'RajasthanVacancy सिंक करें'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Content Creation Shortcuts */}
+            <div className="space-y-2">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                त्वरित संपादकीय शॉर्टकट (Quick Shortcuts)
               </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenWriteBlog();
+                  }}
+                  className="p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all text-left flex items-start gap-3 cursor-pointer group"
+                >
+                  <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-extrabold text-slate-900 group-hover:text-emerald-900">
+                      नई भर्ती अधिसूचना लिखें
+                    </h4>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      पूर्व-निर्मित तालिका और पात्रता फॉर्मेट के साथ
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenWriteBlog();
+                  }}
+                  className="p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all text-left flex items-start gap-3 cursor-pointer group"
+                >
+                  <div className="p-2 rounded-xl bg-amber-100 text-amber-800 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-extrabold text-slate-900 group-hover:text-emerald-900">
+                      कट-ऑफ व परिणाम विश्लेषण
+                    </h4>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      श्रेणीवार कट-ऑफ व स्कोरकार्ड गाइड
+                    </p>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
+        )}
 
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-              सत्यापन (Verification)
-            </span>
-            <div className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-emerald-700">
-              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Google Verified</span>
+        {/* Tab 2: Post Deletion & Management */}
+        {activeTab === 'manage' && (
+          <div className="space-y-4">
+            {/* Filter Sub-Tabs & Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-bold">
+                <button
+                  onClick={() => setManageType('blogs')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    manageType === 'blogs'
+                      ? 'bg-white text-slate-900 shadow-xs font-extrabold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  ब्लॉग पोस्ट ({allPosts.length})
+                </button>
+                <button
+                  onClick={() => setManageType('jobs')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    manageType === 'jobs'
+                      ? 'bg-white text-slate-900 shadow-xs font-extrabold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  सरकारी भर्तियां ({allJobs.length})
+                </button>
+              </div>
+
+              <div className="relative flex-1 max-w-xs">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="शीर्षक खोजें..."
+                  className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+
+            {/* List View with Delete Buttons */}
+            <div className="max-h-96 overflow-y-auto space-y-2.5 pr-1">
+              {manageType === 'blogs' ? (
+                allPosts
+                  .filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((post) => (
+                    <div
+                      key={`admin-delete-blog-${post.id}`}
+                      className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-red-300 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                    >
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase">
+                            {post.category}
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            {new Date(post.publishedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h4 className="font-extrabold text-slate-900 text-xs truncate" title={post.title}>
+                          {post.title}
+                        </h4>
+                      </div>
+
+                      {onDeleteBlog && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`क्या आप इस पोस्ट को निश्चित रूप से डिलीट करना चाहते हैं?\n"${post.title}"`)) {
+                              onDeleteBlog(post.id);
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white border border-red-200 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1 shrink-0 shadow-2xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>डिलीट</span>
+                        </button>
+                      )}
+                    </div>
+                  ))
+              ) : (
+                allJobs
+                  .filter((j) => j.title.toLowerCase().includes(searchQuery.toLowerCase()) || j.organization.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((job) => (
+                    <div
+                      key={`admin-delete-job-${job.id}`}
+                      className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-red-300 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                    >
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-900 uppercase">
+                            {job.category}
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-bold">
+                            {job.totalPosts}
+                          </span>
+                        </div>
+                        <h4 className="font-extrabold text-slate-900 text-xs truncate" title={job.title}>
+                          {job.title}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 truncate">{job.organization}</p>
+                      </div>
+
+                      {onDeleteJob && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`क्या आप इस भर्ती को निश्चित रूप से डिलीट करना चाहते हैं?\n"${job.title}"`)) {
+                              onDeleteJob(job.id);
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white border border-red-200 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1 shrink-0 shadow-2xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>डिलीट</span>
+                        </button>
+                      )}
+                    </div>
+                  ))
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Web Ingestion Section: SarkariResult & RajasthanVacancy */}
-        <div className="space-y-3">
-          {/* SarkariResult Live Ingestion */}
-          <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-sky-600 animate-ping inline-block" />
-                <h4 className="text-xs font-black text-sky-950 uppercase tracking-wide">
-                  SarkariResult.com लाइव डेटा सिंक
-                </h4>
-              </div>
-              <p className="text-[11px] text-sky-800 font-medium">
-                SarkariResult की नवीनतम भर्तियों से 1-क्लिक में नए लेख सिंक करें और आधिकारिक वेबसाइट लिंक के साथ जोड़ें।
-              </p>
-            </div>
-            {onSyncFromSarkariResult && (
-              <button
-                onClick={onSyncFromSarkariResult}
-                disabled={isSyncing}
-                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5 shrink-0 disabled:opacity-50"
-              >
-                <Zap className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span>{isSyncing ? 'सिंक हो रहा है...' : 'SarkariResult सिंक करें'}</span>
-              </button>
-            )}
-          </div>
-
-          {/* RajasthanVacancy Live Ingestion */}
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping inline-block" />
-                <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide">
-                  RajasthanVacancy.com लाइव डेटा सिंक
-                </h4>
-              </div>
-              <p className="text-[11px] text-amber-900 font-medium">
-                राजस्थान की समस्त सरकारी भर्तियों (RPSC, RSMSSB CET, राजस्थान पुलिस, पटवारी व शिक्षक भर्ती) से 1-क्लिक सिंक।
-              </p>
-            </div>
-            {onSyncFromRajasthanVacancy && (
-              <button
-                onClick={onSyncFromRajasthanVacancy}
-                disabled={isRajasthanSyncing}
-                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5 shrink-0 disabled:opacity-50"
-              >
-                <Zap className={`w-3.5 h-3.5 ${isRajasthanSyncing ? 'animate-spin' : ''}`} />
-                <span>{isRajasthanSyncing ? 'राजस्थान डेटा सिंक हो रहा है...' : 'RajasthanVacancy सिंक करें'}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Content Creation Shortcuts */}
-        <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-            त्वरित संपादकीय शॉर्टकट (Quick Shortcuts)
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button
-              onClick={() => {
-                onClose();
-                onOpenWriteBlog();
-              }}
-              className="p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all text-left flex items-start gap-3 cursor-pointer group"
-            >
-              <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-extrabold text-slate-900 group-hover:text-emerald-900">
-                  नई भर्ती अधिसूचना लिखें
-                </h4>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  पूर्व-निर्मित तालिका और पात्रता फॉर्मेट के साथ
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => {
-                onClose();
-                onOpenWriteBlog();
-              }}
-              className="p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all text-left flex items-start gap-3 cursor-pointer group"
-            >
-              <div className="p-2 rounded-xl bg-amber-100 text-amber-800 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                <Layers className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-extrabold text-slate-900 group-hover:text-emerald-900">
-                  कट-ऑफ व परिणाम विश्लेषण
-                </h4>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  श्रेणीवार कट-ऑफ व स्कोरकार्ड गाइड
-                </p>
-              </div>
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Modal Footer */}
         <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

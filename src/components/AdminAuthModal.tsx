@@ -17,7 +17,7 @@ interface AdminAuthModalProps {
   onSuccess: () => void;
 }
 
-const VALID_PASSCODES = ['1911', 'admin', 'sarkari2026', 'sarkaripulse'];
+const VALID_PASSCODES = ['0508', 'admin', 'sarkari2026', 'sarkaripulse'];
 
 export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
   isOpen,
@@ -103,7 +103,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                   setPasscode(e.target.value);
                   if (errorMsg) setErrorMsg(null);
                 }}
-                placeholder="पासकोड दर्ज करें (उदा. 1911)"
+                placeholder="पासकोड दर्ज करें (Enter Passcode)"
                 className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 tracking-wider"
               />
               <button
@@ -123,16 +123,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
               </div>
             )}
 
-            <div className="mt-2 p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-semibold flex items-center justify-between">
-              <span>💡 अधिकृत संपादक पिन:</span>
-              <button
-                type="button"
-                onClick={() => setPasscode('1911')}
-                className="font-mono font-bold text-emerald-700 hover:underline bg-white px-2 py-0.5 rounded border border-emerald-300 cursor-pointer"
-              >
-                1911 (क्लिक करें)
-              </button>
-            </div>
+
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">

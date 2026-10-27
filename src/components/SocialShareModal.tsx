@@ -34,16 +34,16 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
   // Social Share Constructs
   const shareText = isJob
     ? `🔥 ${title}\n🏛️ आयोग: ${organization}\n👥 कुल पद: ${totalPosts}\n📅 अंतिम तिथि: ${job!.importantDates.applicationEnd}\n\nविस्तृत जानकारी व ऑनलाइन आवेदन लिंक:`
-    : `📰 ${title}\n\nसरकारीपल्स न्यूज़ ब्लॉग पर विस्तृत रिपोर्ट पढ़ें:`;
+    : `📰 *${title}*\n\n👉 सरकारीपल्स न्यूज़ ब्लॉग पर विस्तृत रिपोर्ट पढ़ें:`;
 
   const encodedUrl = encodeURIComponent(currentUrl);
-  const encodedText = encodeURIComponent(`${shareText} ${currentUrl}`);
+  const encodedText = encodeURIComponent(`${shareText}\n${currentUrl}`);
 
-  // Social URLs
-  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodedUrl}&hashtags=SarkariNaukri,GovernmentJobs,UPSC,SSC,SarkariPulse`;
+  // Social URLs with post heading (title)
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`📰 ${title}`)}&url=${encodedUrl}&hashtags=SarkariNaukri,GovernmentJobs,SarkariPulse`;
   const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
-  const telegramShareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(shareText)}`;
+  const telegramShareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`📰 ${title}`)}`;
 
   const instagramCaption = isJob
     ? `🚨 नई सरकारी भर्ती अधिसूचना 2026! 🚨\n\n📌 पद: ${title}\n🏛️ संस्थान: ${organization}\n🔢 कुल पद: ${totalPosts}\n🎓 योग्यता: ${job!.qualification.slice(0, 80)}...\n⏳ अंतिम तिथि: ${job!.importantDates.applicationEnd}\n\n👉 बायो में दिए गए लिंक से तुरंत ऑनलाइन फॉर्म भरें!\n\n#SarkariNaukri #GovernmentJobs #UPSC #SSC #SarkariPulse #JobAlert2026 #ExamPreparation`

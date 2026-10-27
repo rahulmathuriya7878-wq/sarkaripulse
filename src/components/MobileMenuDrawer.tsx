@@ -130,7 +130,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               >
                 <div className="flex items-center gap-2.5">
                   <FileCheck2 className="w-4 h-4 text-emerald-600" />
-                  <span>सरकारी योजना (Sarkari Yojana)</span>
+                  <span>सरकारी योजना व भर्ती ट्रेंड्स (Job Trends)</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>

@@ -34,6 +34,7 @@ import { SearchModal } from './components/SearchModal';
 import { AdminPanel } from './components/AdminPanel';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { FastUpdatesGrid } from './components/FastUpdatesGrid';
+import { JobTrendsWidget } from './components/JobTrendsWidget';
 import { fetchLiveVacanciesFromRSS, scrapeVacancyFromUrl } from './services/jobScraperService';
 
 import {
@@ -349,6 +350,20 @@ export default function App() {
     setSelectedBlog(newPost);
   };
 
+  const handleDeleteBlog = (blogId: string) => {
+    setBlogPosts((prev) => prev.filter((p) => p.id !== blogId));
+    if (selectedBlog?.id === blogId) {
+      setSelectedBlog(null);
+    }
+  };
+
+  const handleDeleteJob = (jobId: string) => {
+    setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    if (selectedJob?.id === jobId) {
+      setSelectedJob(null);
+    }
+  };
+
   const [isSarkariResultSyncing, setIsSarkariResultSyncing] = useState(false);
   const [isRajasthanSyncing, setIsRajasthanSyncing] = useState(false);
 
@@ -467,6 +482,8 @@ export default function App() {
               onBack={() => setSelectedBlog(null)}
               onSelectRelatedPost={(p) => setSelectedBlog(p)}
               allPosts={blogPosts}
+              isAdminUnlocked={isAdminUnlocked}
+              onDeletePost={handleDeleteBlog}
             />
           </div>
         );
@@ -509,7 +526,14 @@ export default function App() {
 
           {/* Lead Story / Featured Hero Blog Card */}
           {featuredHeroBlog && (
-            <BlogCard key={`hero-${featuredHeroBlog.id}`} post={featuredHeroBlog} onSelectPost={(p) => setSelectedBlog(p)} isFeaturedHero />
+            <BlogCard
+              key={`hero-${featuredHeroBlog.id}`}
+              post={featuredHeroBlog}
+              onSelectPost={(p) => setSelectedBlog(p)}
+              isFeaturedHero
+              isAdminUnlocked={isAdminUnlocked}
+              onDeletePost={handleDeleteBlog}
+            />
           )}
 
           <FastUpdatesGrid 
@@ -517,6 +541,8 @@ export default function App() {
             setSelectedBlog={setSelectedBlog} 
             setActiveTab={setActiveTab}
             setSelectedJob={setSelectedJob}
+            isAdminUnlocked={isAdminUnlocked}
+            onDeleteBlog={handleDeleteBlog}
           />
         </div>
       );
@@ -525,6 +551,13 @@ export default function App() {
     if (activeTab === 'results') {
       return (
         <div key="view-container-vacancies-feed" className="space-y-6">
+          {/* Recharts Job Trends Dashboard Widget */}
+          <JobTrendsWidget
+            jobs={jobs}
+            selectedCategory={selectedSector}
+            onSelectCategoryFilter={(cat) => setSelectedSector(cat)}
+          />
+
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
               <div className="relative flex-1">
@@ -966,6 +999,10 @@ export default function App() {
         onSyncFromRajasthanVacancy={handleSyncFromRajasthanVacancy}
         isRajasthanSyncing={isRajasthanSyncing}
         onLockAdmin={handleLockAdmin}
+        allPosts={blogPosts}
+        allJobs={jobs}
+        onDeleteBlog={handleDeleteBlog}
+        onDeleteJob={handleDeleteJob}
       />
       <AdminAuthModal
         isOpen={isAdminAuthModalOpen}

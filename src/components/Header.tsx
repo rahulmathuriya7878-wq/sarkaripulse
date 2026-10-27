@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
               activeTab === 'results' ? 'text-emerald-700 bg-emerald-50 font-extrabold' : 'hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            सरकारी योजना
+            सरकारी योजना व ट्रेंड्स
           </button>
 
           <button

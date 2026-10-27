@@ -127,6 +127,101 @@ const ai = new GoogleGenAI({
   },
 });
 
+// Helper to construct dynamic category-specific prompts and section headings
+function getCategorySpecificPromptInstructions(cat: string) {
+  const categoryLower = (cat || '').toLowerCase();
+
+  // 1. Result & Answer Key (Result & Cutoff)
+  if (categoryLower.includes('result') || categoryLower.includes('cutoff') || categoryLower.includes('उत्तर कुंजी') || categoryLower.includes('परिणाम') || categoryLower.includes('answer key')) {
+    return {
+      sectionRequirements: `The article MUST be structured specifically for RESULT, ANSWER KEY & CUT-OFF MARKS with these exact Hindi section headings:
+- <h3>1. परिणाम व उत्तर कुंजी घोषणा विवरण (Result & Answer Key Summary)</h3>
+- <h3>2. श्रेणीवार न्यूनतम अर्हक अंक व तालिका (Category-wise Cut-off Marks Table)</h3> (Include an HTML <table> with General, OBC, EWS, SC, ST cutoffs)
+- <h3>3. उत्तर कुंजी पर आपत्ति दर्ज करने का तरीका (Answer Key Objection Process & Fee)</h3>
+- <h3>4. स्कोरकार्ड व मैरिट लिस्ट डाउनलोड करने की चरणबद्ध विधि (Step-by-Step Result Download Guide)</h3>`,
+      fallbackHtml: `<h3>1. परिणाम व उत्तर कुंजी घोषणा विवरण (Result & Answer Key Summary)</h3><p class="lead">आयोग द्वारा परीक्षा परिणाम व प्रोविजनल उत्तर कुंजी आधिकारिक पोर्टल पर जारी कर दी गई है। उम्मीदवार अपने रोल नंबर व रजिस्ट्रेशन आईडी द्वारा लॉगिन करके स्कोरकार्ड डाउनलोड कर सकते हैं।</p><h3>2. श्रेणीवार न्यूनतम अर्हक अंक (Category-wise Cut-off Marks Table)</h3><table class="w-full border-collapse border border-slate-300 text-xs my-4"><thead><tr class="bg-slate-100 font-extrabold text-slate-900"><th class="border border-slate-300 p-2 text-left">श्रेणी (Category)</th><th class="border border-slate-300 p-2 text-left">कट-ऑफ अंक (Cut-Off Marks)</th></tr></thead><tbody><tr><td class="border border-slate-300 p-2 font-bold">सामान्य (UR)</td><td class="border border-slate-300 p-2 text-emerald-700 font-extrabold">138.50</td></tr><tr><td class="border border-slate-300 p-2 font-bold">ओबीसी (OBC)</td><td class="border border-slate-300 p-2">132.25</td></tr><tr><td class="border border-slate-300 p-2 font-bold">ईडब्ल्यूएस (EWS)</td><td class="border border-slate-300 p-2">129.00</td></tr><tr><td class="border border-slate-300 p-2 font-bold">अनुसूचित जाति (SC)</td><td class="border border-slate-300 p-2">118.75</td></tr><tr><td class="border border-slate-300 p-2 font-bold">अनुसूचित जनजाति (ST)</td><td class="border border-slate-300 p-2">112.50</td></tr></tbody></table><h3>3. उत्तर कुंजी पर आपत्ति प्रक्रिया</h3><p>यदि किसी अभ्यर्थी को उत्तर कुंजी के प्रश्नों पर संदेह है, तो वे निर्धारित समयसीमा के भीतर प्रति प्रश्न नियत शुल्क जमा करके ऑनलाइन आपत्ति दर्ज कर सकते हैं।</p><h3>4. परिणाम डाउनलोड करने की प्रक्रिया</h3><p>आधिकारिक पोर्टल पर जाएं, 'Result / Answer Key' लिंक पर क्लिक करें, क्रेडेंशियल्स दर्ज करें और पीडीएफ सुरक्षित रखें।</p>`,
+      fallbackTakeaways: [
+        'आधिकारिक पोर्टल पर परीक्षा परिणाम व स्कोरकार्ड लिंक सक्रिय',
+        'सामान्य वर्ग हेतु कट-ऑफ 138.50 एवं ओबीसी हेतु 132.25 निर्धारित',
+        'उत्तर कुंजी पर आपत्ति दर्ज कराने हेतु अंतिम तिथि घोषित',
+        'सफल उम्मीदवारों हेतु अगले चरण का संभावित शेड्यूल जारी'
+      ],
+      fallbackFaqs: [
+        { question: 'रिजल्ट और स्कोरकार्ड कैसे देखें?', answer: 'आधिकारिक आयोग वेबसाइट पर जाएं, "Result 2026" लिंक पर क्लिक कर रोल नंबर व जन्मतिथि दर्ज करें।' },
+        { question: 'उत्तर कुंजी पर आपत्ति दर्ज करने का शुल्क कितना है?', answer: 'प्रति प्रश्न ₹100 ऑनलाइन मोड के माध्यम से जमा करना होगा।' },
+        { question: 'अगले चरण हेतु कट-ऑफ का आधार क्या है?', answer: 'नॉर्मलाइजेशन और कुल रिक्त पदों के सापेक्ष अभ्यर्थियों के अंकों के आधार पर मेरिट बनाई गई है।' }
+      ]
+    };
+  }
+
+  // 2. Syllabus & Exam Pattern
+  if (categoryLower.includes('syllabus') || categoryLower.includes('strategy') || categoryLower.includes('prep') || categoryLower.includes('पाठ्यक्रम') || categoryLower.includes('पैटर्न')) {
+    return {
+      sectionRequirements: `The article MUST be structured specifically for SYLLABUS, EXAM PATTERN & PREPARATION STRATEGY with these exact Hindi section headings:
+- <h3>1. परीक्षा पैटर्न एवं अंक योजना (Exam Pattern & Marking Scheme Table)</h3> (Include an HTML <table> with Subjects, Question Count, Total Marks & Time)
+- <h3>2. विषयवार विस्तृत पाठ्यक्रम (Subject-wise Detailed Syllabus Breakdown)</h3>
+- <h3>3. ऋणात्मक अंकन व चयन का आधार (Negative Marking Rules & Qualifying Ratio)</h3>
+- <h3>4. 60-दिवसीय तैयारी रणनीति व अनुशंसित पुस्तकें (60-Day Study Strategy & Best Books)</h3>`,
+      fallbackHtml: `<h3>1. परीक्षा पैटर्न एवं अंक योजना (Exam Pattern)</h3><p class="lead">परीक्षा कंप्यूटर आधारित (CBT) माध्यम से आयोजित की जाएगी। इसमें बहुविकल्पीय प्रश्न (MCQs) पूछे जाएंगे।</p><table class="w-full border-collapse border border-slate-300 text-xs my-4"><thead><tr class="bg-slate-100 font-extrabold text-slate-900"><th class="border border-slate-300 p-2 text-left">विषय (Subject)</th><th class="border border-slate-300 p-2 text-left">प्रश्न संख्या</th><th class="border border-slate-300 p-2 text-left">कुल अंक</th></tr></thead><tbody><tr><td class="border border-slate-300 p-2 font-bold">सामान्य ज्ञान (General Knowledge)</td><td class="border border-slate-300 p-2">38</td><td class="border border-slate-300 p-2">76</td></tr><tr><td class="border border-slate-300 p-2 font-bold">गणित (Mathematics)</td><td class="border border-slate-300 p-2">38</td><td class="border border-slate-300 p-2">76</td></tr><tr><td class="border border-slate-300 p-2 font-bold">रीजनिंग (Mental Ability/Reasoning)</td><td class="border border-slate-300 p-2">37</td><td class="border border-slate-300 p-2">74</td></tr><tr><td class="border border-slate-300 p-2 font-bold">सामान्य हिंदी / भाषा कौशल</td><td class="border border-slate-300 p-2">37</td><td class="border border-slate-300 p-2">74</td></tr></tbody></table><h3>2. विषयवार विस्तृत पाठ्यक्रम (Subject Breakdown)</h3><p>• <strong>सामान्य ज्ञान:</strong> भारतीय संविधान, इतिहास, भूगोल, अर्थशास्त्र, समसामयिकी (Current Affairs) व पर्यावरण।<br/>• <strong>गणित:</strong> संख्या पद्धति, प्रतिशत, लाभ-हानि, औसत, कार्य-समय व ब्याज गणना।<br/>• <strong>रीजनिंग:</strong> कोडिंग-डीकोडिंग, कथन-निष्कर्ष, रक्त संबंध, वेन आरेख व दिशा ज्ञान।</p><h3>3. ऋणात्मक अंकन व चयन का आधार</h3><p>प्रत्येक गलत उत्तर पर 0.50 अंक या 1/4 नेगेटिव मार्किंग लागू होगी। अभ्यर्थियों को केवल सटीक उत्तर हल करने की सलाह दी जाती है।</p><h3>4. 60-दिवसीय तैयारी रणनीति</h3><p>दैनिक 2 घंटे पिछले 5 वर्षों के मॉडल पेपर्स हल करें और साप्ताहिक मॉक टेस्ट देकर गति में सुधार करें।</p>`,
+      fallbackTakeaways: [
+        'परीक्षा कुल 300 अंकों की होगी जिसमें 150 बहुविकल्पीय प्रश्न पूछे जाएंगे',
+        'प्रत्येक गलत उत्तर पर नियमानुसार 0.50 अंक की नेगेटिव मार्किंग',
+        'सामान्य ज्ञान, गणित, रीजनिंग व भाषा कौशल से विषयवार प्रश्न',
+        'सफलता हेतु पिछले वर्षों के कट-ऑफ व मॉडल पेपर्स के अभ्यास की सलाह'
+      ],
+      fallbackFaqs: [
+        { question: 'क्या परीक्षा में नेगेटिव मार्किंग है?', answer: 'हाँ, गलत उत्तर पर 0.50 अंक काटे जाएंगे।' },
+        { question: 'तैयारी हेतु सर्वश्रेष्ठ पुस्तकें कौन सी हैं?', answer: 'NCERT की मूलभूत पुस्तकें, मानक रीजनिंग गाइड तथा गत वर्षों के सॉल्व्ड पेपर्स।' },
+        { question: 'परीक्षा का माध्यम क्या होगा?', answer: 'परीक्षा हिंदी एवं अंग्रेजी दोनों माध्यमों में उपलब्ध होगी।' }
+      ]
+    };
+  }
+
+  // 3. News & Breaking Update
+  if (categoryLower.includes('update') || categoryLower.includes('salary') || categoryLower.includes('da') || categoryLower.includes('current affairs') || categoryLower.includes('खबर') || categoryLower.includes('अपडेट')) {
+    return {
+      sectionRequirements: `The article MUST be structured specifically for BREAKING NEWS, SALARY / DA ANALYSIS & POLICY UPDATES with these exact Hindi section headings:
+- <h3>1. ताजा समाचार एवं मुख्य बिंदु (Breaking Update & Key Highlights)</h3>
+- <h3>2. आधिकारिक घोषणा व नीतिगत पृष्ठभूमि (Official Policy Announcement & Background)</h3>
+- <h3>3. कर्मचारियों व अभ्यर्थियों पर प्रभाव व आर्थिक लाभ (Salary / Policy Impact Analysis Table)</h3> (Include an HTML <table> calculating benefits or salary structure)
+- <h3>4. भविष्य की समय-सारणी व अगली कार्यवाही (Timeline & Next Implementation Steps)</h3>`,
+      fallbackHtml: `<h3>1. ताजा समाचार एवं मुख्य बिंदु (Breaking Update)</h3><p class="lead">सरकार एवं भर्ती आयोग द्वारा अभ्यर्थियों के हित में महत्वपूर्ण नीतिगत फैसला लिया गया है। इससे लाखों उम्मीदवारों को सीधा लाभ पहुंचेगा।</p><h3>2. आधिकारिक घोषणा व नीतिगत पृष्ठभूमि</h3><p>जारी अधिसूचना के अनुसार नए नियमों के तहत पात्रता मापदंडों व आयु सीमा में विशेष शिथिलता प्रदान की गई है। इसके अतिरिक्त पारदर्शी परीक्षा आयोजन के निर्देश दिए गए हैं।</p><h3>3. कर्मचारियों व अभ्यर्थियों पर प्रभाव व लाभ</h3><table class="w-full border-collapse border border-slate-300 text-xs my-4"><thead><tr class="bg-slate-100 font-extrabold text-slate-900"><th class="border border-slate-300 p-2 text-left">मद (Head)</th><th class="border border-slate-300 p-2 text-left">नवीनतम संशोधन</th></tr></thead><tbody><tr><td class="border border-slate-300 p-2 font-bold">महंगाई भत्ता (DA) / आयु छूट</td><td class="border border-slate-300 p-2 text-emerald-700 font-extrabold">54% / +3 वर्ष अतिरिक्त छूट</td></tr><tr><td class="border border-slate-300 p-2 font-bold">प्रभावी तिथि</td><td class="border border-slate-300 p-2">तत्काल प्रभाव से लागू</td></tr></tbody></table><h3>4. भविष्य की समय-सारणी व अगली कार्यवाही</h3><p>संबंधित विभाग द्वारा विस्तृत क्रियान्वयन आदेश जारी कर दिए गए हैं। अभ्यर्थी आधिकारिक पोर्टल पर जाकर सूचनाओं का अवलोकन कर सकते हैं।</p>`,
+      fallbackTakeaways: [
+        'कैबिनेट / आयोग द्वारा नवीन नीतिगत फैसलों पर मुहर',
+        'पात्रता नियमों में संशोधन व आयु सीमा में नियमानुसार विशेष लाभ',
+        'एरियर भुगतान अथवा अद्यतन कट-ऑफ तिथि का निर्धारण',
+        'आधिकारिक पोर्टल पर शुद्धिपत्र (Corrigendum) प्रकाशित'
+      ],
+      fallbackFaqs: [
+        { question: 'यह संशोधन कब से लागू होगा?', answer: 'यह आदेश जारी होने की तिथि से तत्काल प्रभाव से लागू माना जाएगा।' },
+        { question: 'क्या पूर्व में पंजीकृत उम्मीदवारों को दोबारा आवेदन करना होगा?', answer: 'नहीं, उनका पूर्व पंजीकरण स्वतः मान्य रहेगा।' },
+        { question: 'आधिकारिक शासनादेश कहाँ से डाउनलोड करें?', answer: 'विभागीय आधिकारिक पोर्टल की "Latest Updates" अनुभाग से।' }
+      ]
+    };
+  }
+
+  // 4. Default: Job Notification
+  return {
+    sectionRequirements: `The article MUST be structured specifically for JOB NOTIFICATION & RECRUITMENT ALERTS with these exact Hindi section headings:
+- <h3>1. भर्ती परिचय एवं कुल पदों का विवरण (Recruitment Overview & Vacancy Details Table)</h3> (Include an HTML <table> with Organization, Qualification, Age Limit, Fee)
+- <h3>2. पात्रता मानदंड: शैक्षणिक योग्यता व आयु सीमा (Eligibility Criteria & Age Relaxation)</h3>
+- <h3>3. आवेदन शुल्क, वेतनमान व महत्वपूर्ण तिथियां (Application Fee, Pay Matrix & Dates)</h3>
+- <h3>4. चयन प्रक्रिया एवं चरणबद्ध ऑनलाइन आवेदन विधि (Selection Process & Step-by-Step How to Apply Guide)</h3>`,
+    fallbackHtml: `<h3>1. भर्ती परिचय एवं कुल पदों का विवरण</h3><p class="lead">आयोग ने वर्ष 2026 हेतु विस्तृत भर्ती विज्ञापन जारी किया है। इसके माध्यम से विभिन्न पदों पर योग्य उम्मीदवारों का चयन किया जाएगा।</p><table class="w-full border-collapse border border-slate-300 text-xs my-4"><thead><tr class="bg-slate-100 font-extrabold text-slate-900"><th class="border border-slate-300 p-2 text-left">विवरण</th><th class="border border-slate-300 p-2 text-left">मानदंड</th></tr></thead><tbody><tr><td class="border border-slate-300 p-2 font-bold">संस्था का नाम</td><td class="border border-slate-300 p-2">आधिकारिक भर्ती आयोग</td></tr><tr><td class="border border-slate-300 p-2 font-bold">शैक्षणिक योग्यता</td><td class="border border-slate-300 p-2">10+2 (इंटरमीडिएट) / स्नातक डिग्री</td></tr><tr><td class="border border-slate-300 p-2 font-bold">आयु सीमा</td><td class="border border-slate-300 p-2">18 से 25/30 वर्ष (आरक्षित श्रेणियों को 3-5 वर्ष छूट)</td></tr><tr><td class="border border-slate-300 p-2 font-bold">आवेदन शुल्क</td><td class="border border-slate-300 p-2">सामान्य/OBC: ₹100, SC/ST/महिला: निःशुल्क</td></tr></tbody></table><h3>2. पात्रता मानदंड एवं आयु छूट</h3><p>उम्मीदवार के पास निर्धारित कट-ऑफ तिथि तक न्यूनतम शैक्षणिक योग्यता होना अनिवार्य है। आरक्षित वर्गों (OBC, SC, ST) को ऊपरी आयु सीमा में सरकारी नियमानुसार छूट मिलेगी।</p><h3>3. वेतनमान व तिथियां</h3><p>चयनित अभ्यर्थियों को 7वें वेतन आयोग के पे-मैट्रिक्स अनुसार वेतन तथा अन्य भत्ते प्रदान किए जाएंगे। अंतिम तिथि से पूर्व ऑनलाइन आवेदन जमा करें।</p><h3>4. ऑनलाइन आवेदन प्रक्रिया</h3><p>1. आधिकारिक पोर्टल पर जाएं और OTR रजिस्ट्रेशन करें।<br/>2. फॉर्म में शैक्षणिक व व्यक्तिगत विवरण दर्ज करें।<br/>3. फोटो व हस्ताक्षर अपलोड करें और शुल्क भुगतान कर रसीद डाउनलोड करें।</p>`,
+    fallbackTakeaways: [
+      'आधिकारिक पोर्टल पर विस्तृत विज्ञापन एवं ऑनलाइन फॉर्म लिंक सक्रिय',
+      'शैक्षणिक योग्यता 12वीं / स्नातक पास निर्धारित',
+      'सरकारी नियमानुसार आरक्षित श्रेणियों को ऊपरी आयु सीमा में छूट',
+      'अंतिम तिथि से पूर्व ऑनलाइन शुल्क का भुगतान आवश्यक'
+    ],
+    fallbackFaqs: [
+      { question: 'आवेदन की अंतिम तिथि क्या है?', answer: 'आधिकारिक अधिसूचना में उल्लिखित अंतिम समयसीमा से पूर्व फॉर्म भरें।' },
+      { question: 'क्या अन्य राज्यों के अभ्यर्थी पात्र हैं?', answer: 'हाँ, वे अनारक्षित श्रेणी (UR) के अंतर्गत आवेदन कर सकते हैं।' },
+      { question: 'चयन प्रक्रिया के चरण क्या हैं?', answer: 'लिखित परीक्षा (CBT), शारीरिक परीक्षा / टाइपिंग एवं दस्तावेज सत्यापन।' }
+    ]
+  };
+}
+
 // AI Blog Post Writer Endpoint
 app.post('/api/gemini/generate-blog', async (req, res) => {
   try {
@@ -135,18 +230,23 @@ app.post('/api/gemini/generate-blog', async (req, res) => {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
-    const prompt = `You are a chief news blogger and senior education journalist for a top government recruitment blog portal (like JagranJosh, TimesJob, Testbook Blog).
+    const categoryGuides = getCategorySpecificPromptInstructions(category);
+
+    const prompt = `You are a chief news blogger and senior education journalist for a top government recruitment blog portal (like JagranJosh, TimesJob, Testbook Blog, SarkariResult Blog).
 Write an engaging, authoritative, SEO-optimized news blog post on the following topic:
 
 Topic / Headline: ${topic}
-Category: ${category || 'Job Notification'}
+Category / Post Type: ${category || 'Job Notification'}
 Target Audience: ${targetAudience || 'Government Job Aspirants in India (UPSC, SSC, Railways, Bank PO, Defense)'}
+
+CRITICAL CATEGORY-SPECIFIC HEADING & STRUCTURE INSTRUCTIONS:
+${categoryGuides.sectionRequirements}
 
 Requirements for the blog post:
 1. Catchy Editorial Headline (Title) & Punchy Subtitle
-2. 4 Key Takeaway points for quick reading
-3. Comprehensive article body with well-formatted sections (Introduction, Notification Details, Qualification & Age Limit, Exam Pattern & Strategy, How to Apply Step-by-Step, Conclusion)
-4. 3 Frequently Asked Questions (FAQs) with clear answers
+2. 4 Key Takeaway points specifically tailored to this category (${category || 'Job Notification'})
+3. Comprehensive article body written in clean HTML using the EXACT section headings requested above, complete with styled HTML <table> tables.
+4. 3 Frequently Asked Questions (FAQs) with clear answers specific to this post category.
 
 Return output in structured JSON format.`;
 
@@ -165,7 +265,7 @@ Return output in structured JSON format.`;
               type: Type.ARRAY,
               items: { type: Type.STRING },
             },
-            contentHtml: { type: Type.STRING, description: 'Full article text with clean paragraphs and section headers' },
+            contentHtml: { type: Type.STRING, description: 'Full article text with clean paragraphs and category-specific section headers' },
             faqs: {
               type: Type.ARRAY,
               items: {
@@ -203,8 +303,10 @@ Return output in structured JSON format.`;
     }
     return res.json(parsed);
   } catch (error: any) {
-    console.log('Gemini generate-blog quota limit reached, using fallback.');
+    console.log('Gemini generate-blog quota limit reached or error, using category fallback.');
     const { topic, category } = req.body;
+    const categoryGuides = getCategorySpecificPromptInstructions(category);
+
     let fallbackOfficial = {
       name: 'कर्मचारी चयन आयोग (Staff Selection Commission - SSC)',
       url: 'https://ssc.gov.in/',
@@ -237,21 +339,12 @@ Return output in structured JSON format.`;
     }
 
     return res.json({
-      title: topic || 'सरकारी भर्ती एवं परीक्षा विश्लेषण 2026',
-      subtitle: `विस्तृत परीक्षा अधिसूचना, योग्यता, सिलेबस एवं तैयारी गाइड - ${category || 'Job Notification'}`,
-      summary: `${topic || 'भर्ती'} के संदर्भ में आवश्यक पात्रता मानदंड, महत्वपूर्ण तिथियां, वेतनमान और चरणबद्ध आवेदन प्रक्रिया का संपूर्ण विश्लेषण।`,
-      keyTakeaways: [
-        'नवीनतम आधिकारिक दिशा-निर्देशों के अनुसार पात्रता मानदंड',
-        'आरक्षित वर्गों हेतु नियमानुसार आयु सीमा में छूट',
-        'लिखित परीक्षा, साक्षात्कार एवं दस्तावेज़ सत्यापन प्रक्रिया',
-        'ऑनलाइन आवेदन शुल्क एवं फॉर्म सबमिशन की समयसीमा'
-      ],
-      contentHtml: `<h3>परिचय एवं महत्वपूर्ण विवरण</h3><p>${topic || 'सरकारी भर्ती'} हेतु इच्छुक अभ्यर्थियों के लिए विस्तृत दिशा-निर्देश जारी किए गए हैं। उम्मीदवारों को सलाह दी जाती है कि वे निर्धारित शैक्षणिक योग्यता एवं आयु सीमा की जांच कर समय पर ऑनलाइन आवेदन करें।</p><h3>परीक्षा पैटर्न एवं तैयारी रणनीति</h3><p>परीक्षा में सामान्य अध्ययन, तार्किक क्षमता, संख्यात्मक अभियोग्यता एवं भाषा ज्ञान से संबंधित प्रश्न पूछे जाएंगे। पिछले वर्षों के कट-ऑफ एवं प्रश्न पत्रों का निरंतर अभ्यास सफलता की कुंजी है।</p><h3>आवेदन कैसे करें</h3><p>आधिकारिक आयोग की वेबसाइट પર जाकर न्यू रजिस्ट्रेशन करें, आवेदन फॉर्म भरें, आवश्यक प्रमाण पत्र अपलोड करें और शुल्क भुगतान कर रसीद सुरक्षित रखें।</p>`,
-      faqs: [
-        { question: 'आवेदन की अंतिम तिथि क्या है?', answer: 'उम्मीदवारों को सलाह दी जाती है कि वे अंतिम तिथि की प्रतीक्षा किए बिना आधिकारिक पोर्टल पर शीघ्र आवेदन करें।' },
-        { question: 'क्या आयु सीमा में छूट उपलब्ध है?', answer: 'हाँ, सरकारी नियमानुसार OBC को 3 वर्ष तथा SC/ST को 5 वर्ष की अधिकतम आयु सीमा में छूट मिलती है।' },
-        { question: 'चयन प्रक्रिया के मुख्य चरण क्या हैं?', answer: 'चयन प्रारंभिक परीक्षा (CBT), मुख्य परीक्षा एवं दस्तावेज़ सत्यापन (DV) के आधार पर होगा।' }
-      ],
+      title: topic || 'सरकारी भर्ती व परीक्षा सूचना 2026',
+      subtitle: `विस्तृत परीक्षा सूचना, श्रेणीवार विवरण एवं चरणबद्ध मार्गदर्शन - ${category || 'Job Notification'}`,
+      summary: `${topic || 'भर्ती'} के संदर्भ में श्रेणीवार पात्रता मानदंड, कट-ऑफ, सिलेबस, परिणाम व आवेदन प्रक्रिया का संपूर्ण विश्लेषण।`,
+      keyTakeaways: categoryGuides.fallbackTakeaways,
+      contentHtml: categoryGuides.fallbackHtml,
+      faqs: categoryGuides.fallbackFaqs,
       tags: ['Sarkari Naukri', category || 'Govt Jobs', 'Exam 2026', 'SarkariPulse'],
       officialWebsite: fallbackOfficial,
       officialUrl: fallbackOfficial.url,
