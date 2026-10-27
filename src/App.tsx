@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { JobAlert, NewsItem, AppNotification, NotificationPreferences, JobCategory, AlertType, BlogPost, BlogCategory } from './types';
 import { INITIAL_JOB_ALERTS } from './data/jobData';
 import { INITIAL_NEWS_ITEMS } from './data/newsData';
@@ -35,6 +35,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { FastUpdatesGrid } from './components/FastUpdatesGrid';
 import { JobTrendsWidget } from './components/JobTrendsWidget';
+import { SEOHead } from './components/SEOHead';
 import { fetchLiveVacanciesFromRSS, scrapeVacancyFromUrl } from './services/jobScraperService';
 
 import {
@@ -272,21 +273,25 @@ export default function App() {
     }
   };
 
-  // Initialize LocalStorage Data & Trigger Initial RSS Feed Sync
+  // Initialize LocalStorage Data, URL Path Route & Notifications
   useEffect(() => {
     setNotifications(getStoredNotifications());
     setPreferences(getStoredPreferences());
     setBookmarks(getStoredBookmarks());
-    
-    /*
-    const lastRssSync = localStorage.getItem('sarkaripulse_last_rss_sync_v1');
-    const now = Date.now();
-    // Only sync if last sync was > 1 hour ago (3600000 ms)
-    if (!lastRssSync || now - parseInt(lastRssSync) > 3600000) {
-      handleSyncRssVacancies();
-      localStorage.setItem('sarkaripulse_last_rss_sync_v1', now.toString());
+
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      if (path === 'results') {
+        setActiveTab('results');
+      } else if (path === 'eligibility') {
+        setActiveTab('eligibility');
+      } else if (path) {
+        const match = blogPosts.find((b) => b.slug === path);
+        if (match) {
+          setSelectedBlog(match);
+        }
+      }
     }
-    */
   }, []);
 
   const handleToggleBookmark = (jobId: string) => {
@@ -422,39 +427,50 @@ export default function App() {
     setIsPolicyOpen(true);
   };
 
-  // Filter Blog Posts List
-  const filteredBlogPosts = blogPosts.filter((post) => {
-    if (selectedBlogCategory !== 'All Blogs' && post.category !== selectedBlogCategory) return false;
-    if (blogSearchQuery.trim()) {
-      const q = blogSearchQuery.toLowerCase();
-      const matchesTitle = post.title.toLowerCase().includes(q);
-      const matchesSubtitle = post.subtitle.toLowerCase().includes(q);
-      const matchesTags = post.tags.some((t) => t.toLowerCase().includes(q));
-      if (!matchesTitle && !matchesSubtitle && !matchesTags) return false;
-    }
-    return true;
-  });
+  // Filter Blog Posts List with useMemo for high performance
+  const filteredBlogPosts = useMemo(() => {
+    return blogPosts.filter((post) => {
+      if (selectedBlogCategory !== 'All Blogs' && post.category !== selectedBlogCategory) return false;
+      if (blogSearchQuery.trim()) {
+        const q = blogSearchQuery.toLowerCase();
+        const matchesTitle = post.title.toLowerCase().includes(q);
+        const matchesSubtitle = post.subtitle.toLowerCase().includes(q);
+        const matchesTags = post.tags.some((t) => t.toLowerCase().includes(q));
+        if (!matchesTitle && !matchesSubtitle && !matchesTags) return false;
+      }
+      return true;
+    });
+  }, [blogPosts, selectedBlogCategory, blogSearchQuery]);
 
-  const featuredHeroBlog = blogPosts.find((p) => p.isFeatured) || blogPosts[0];
-  const regularBlogPosts = filteredBlogPosts.filter((p) => p.id !== featuredHeroBlog?.id);
+  const featuredHeroBlog = useMemo(() => {
+    return blogPosts.find((p) => p.isFeatured) || blogPosts[0];
+  }, [blogPosts]);
 
-  // Filter Jobs List
-  const filteredJobs = jobs.filter((job) => {
-    if (onlySaved && !bookmarks.includes(job.id)) return false;
-    if (onlyUrgent && !job.isUrgent) return false;
-    if (selectedSector !== 'All Sectors' && job.category !== selectedSector) return false;
+  const regularBlogPosts = useMemo(() => {
+    return filteredBlogPosts.filter((p) => p.id !== featuredHeroBlog?.id);
+  }, [filteredBlogPosts, featuredHeroBlog]);
 
-    if (jobSearchQuery.trim()) {
-      const q = jobSearchQuery.toLowerCase();
-      const matchesTitle = job.title.toLowerCase().includes(q);
-      const matchesOrg = job.organization.toLowerCase().includes(q);
-      const matchesQual = job.qualification.toLowerCase().includes(q);
-      if (!matchesTitle && !matchesOrg && !matchesQual) return false;
-    }
-    return true;
-  });
+  // Filter Jobs List with useMemo
+  const filteredJobs = useMemo(() => {
+    return jobs.filter((job) => {
+      if (onlySaved && !bookmarks.includes(job.id)) return false;
+      if (onlyUrgent && !job.isUrgent) return false;
+      if (selectedSector !== 'All Sectors' && job.category !== selectedSector) return false;
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+      if (jobSearchQuery.trim()) {
+        const q = jobSearchQuery.toLowerCase();
+        const matchesTitle = job.title.toLowerCase().includes(q);
+        const matchesOrg = job.organization.toLowerCase().includes(q);
+        const matchesQual = job.qualification.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesOrg && !matchesQual) return false;
+      }
+      return true;
+    });
+  }, [jobs, onlySaved, bookmarks, onlyUrgent, selectedSector, jobSearchQuery]);
+
+  const unreadCount = useMemo(() => {
+    return notifications.filter((n) => !n.isRead).length;
+  }, [notifications]);
 
   // View Renderer Helper
   const renderMainView = () => {
@@ -646,8 +662,62 @@ export default function App() {
     return null;
   };
 
+  // Dynamic SEO metadata calculation for current view
+  const currentSeoMeta = useMemo(() => {
+    if (selectedBlog) {
+      return {
+        title: `${selectedBlog.title} | SarkariPulse`,
+        description: selectedBlog.summary || selectedBlog.subtitle,
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}/${selectedBlog.slug}` : undefined,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'NewsArticle',
+          'headline': selectedBlog.title,
+          'description': selectedBlog.summary || selectedBlog.subtitle,
+          'datePublished': selectedBlog.publishedAt,
+          'author': {
+            '@type': 'Organization',
+            'name': selectedBlog.author?.name || 'SarkariPulse Bureau'
+          }
+        }
+      };
+    }
+    if (selectedJob) {
+      return {
+        title: `${selectedJob.title} - ${selectedJob.organization} Recruitment | SarkariPulse`,
+        description: `${selectedJob.title}: ${selectedJob.totalPosts}, qualification ${selectedJob.qualification}, apply online before ${selectedJob.importantDates?.applicationEnd || 'deadline'}.`,
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
+      };
+    }
+    if (activeTab === 'results') {
+      return {
+        title: 'Sarkari Result 2026 - Official Exam Results, Answer Keys & Cutoff Marks | SarkariPulse',
+        description: 'Check real-time Sarkari Results, Official Answer Keys, Cut-Off Marks & Merit Lists for UPSC, SSC, Railways, Banking & State PSC Examinations.',
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}/results` : undefined,
+      };
+    }
+    if (activeTab === 'eligibility') {
+      return {
+        title: 'AI Sarkari Qualification & Eligibility Checker 2026 | SarkariPulse',
+        description: 'Check your age relaxation, qualification match & category reservation benefits for active & upcoming Indian government vacancies.',
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}/eligibility` : undefined,
+      };
+    }
+    return {
+      title: 'SarkariPulse - Government Job Alerts, Admit Card & Daily News 2026',
+      description: 'Real-time government job vacancies, UP Police 32,679, RSMSSB CET 6,850, RRB NTPC, SSC CGL 2026, admit cards, exam news, syllabus summaries & AI eligibility checker.',
+      canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
+    };
+  }, [selectedBlog, selectedJob, activeTab]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+      <SEOHead
+        title={currentSeoMeta.title}
+        description={currentSeoMeta.description}
+        canonicalUrl={currentSeoMeta.canonicalUrl}
+        jsonLd={currentSeoMeta.jsonLd}
+      />
       {/* Top Navigation Bar */}
       <Header
         activeTab={activeTab}

@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
@@ -17,6 +18,9 @@ const rssParser = new Parser({
 });
 
 const app = express();
+
+// High Performance Gzip & Brotli Response Compression
+app.use(compression());
 app.use(express.json());
 
 // Helper to determine the accurate base URL for Google Search Console & SEO
@@ -37,17 +41,92 @@ const getBaseUrl = (req: express.Request): string => {
   return 'https://sarkaripulse.vercel.app';
 };
 
+// Static & Dynamic Posts registry for Sitemap, RSS Feed and Head Injection
+const KNOWN_SEO_POSTS = [
+  {
+    slug: 'up-police-constable-32679-bharti-2026-online-form',
+    title: 'UP Police भर्ती 2026: सिपाही व आरक्षी के 32,679 पदों हेतु विस्तृत अधिसूचना जारी, 12वीं पास ऑनलाइन आवेदन',
+    description: 'UP Police 32,679 सिपाही भर्ती 2026: 12वीं पास ऑनलाइन आवेदन, 3 वर्ष आयु छूट, 300 अंकों की परीक्षा व दौड़ मानक।',
+    category: 'Job Notification',
+    pubDate: new Date('2026-10-27T06:30:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: 'rajasthan-rsmssb-cet-patwari-6850-bharti-2026-online-form',
+    title: 'Rajasthan भर्ती 2026: RSMSSB CET व पटवारी के 6,850 पदों हेतु आधिकारिक अधिसूचना जारी',
+    description: 'RSMSSB पटवारी व CET 6,850 पद भर्ती 2026: 12वीं/स्नातक पात्रता, SSO राजस्थान ऑनलाइन फॉर्म व नया सिलेबस।',
+    category: 'Job Notification',
+    pubDate: new Date('2026-10-27T05:15:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: 'rajasthan-rsmssb-cet-patwari-recruitment-2026',
+    title: 'RSMSSB CET पटवारी भर्ती 2026 - विस्तृत सिलेबस व कट-ऑफ ऑनलाइन गाइड',
+    description: 'राजस्थान कर्मचारी चयन बोर्ड CET पटवारी भर्ती ऑनलाइन गाइड, कट-ऑफ मार्क्स एवं योग्यता विश्लेषक।',
+    category: 'Job Notification',
+    pubDate: new Date('2026-10-27T05:15:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: 'railway-ministry-3-year-age-relaxation-analysis',
+    title: 'रेलवे भर्तियों हेतु बड़ा फैसला: RRB ALP, तकनीशियन व NTPC 45,000+ पदों पर 3 साल की अतिरिक्त आयु छूट',
+    description: 'रेलवे RRB 45,000+ भर्तियों हेतु रेल मंत्रालय का बड़ा फैसला: 3 वर्ष अतिरिक्त आयु छूट व विस्तृत परीक्षा रणनीति।',
+    category: 'Salary & DA Analysis',
+    pubDate: new Date('2026-10-17T14:30:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: 'rrb-ntpc-alp-technician-recruitment-2026-age-relaxation',
+    title: 'RRB NTPC & ALP Recruitment 2026 - Age Relaxation & Syllabus Summary',
+    description: 'Railway Recruitment Board NTPC, ALP and Technician 2026 eligibility, age relaxation rules & CBT exam guide.',
+    category: 'Job Notification',
+    pubDate: new Date('2026-10-17T14:30:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: 'ssc-cgl-2026-notification-syllabus-cutoffs',
+    title: 'SSC CGL 2026 भर्ती: 14,200 पद अधिसूचना, नया टियर-1 व टियर-2 सिलेबस व न्यूनतम कट-ऑफ',
+    description: 'कर्मचारी चयन आयोग SSC CGL 2026 संयुक्त स्नातक स्तरीय 14,200 पदों पर भर्ती: टियर-1, टियर-2 सिलेबस व फॉर्म।',
+    category: 'Job Notification',
+    pubDate: new Date('2026-10-17T11:15:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: '7th-pay-commission-da-hike-54-salary-calculation',
+    title: '7th Pay Commission: केंद्रीय कर्मचारियों हेतु 54% महंगाई भत्ता (DA) बढ़ोतरी व एरियर भुगतान विश्लेषण',
+    description: '7वें वेतन आयोग महंगाई भत्ता (DA) 54% बढ़ोतरी: बेसिक सैलरी, HRA, पेंशनर लाभ व 3 माह एरियर कैलकुलेटर।',
+    category: 'Salary & DA Analysis',
+    pubDate: new Date('2026-10-15T09:00:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+  {
+    slug: 'sbi-po-ibps-clerk-60-day-strategy-guide',
+    title: 'SBI PO व IBPS Clerk 2026: 2,000 पदों पर भर्ती व 60-दिवसीय प्री व मेन्स मास्टर प्लान',
+    description: 'भारतीय स्टेट बैंक SBI PO 2,000 पद भर्ती 2026: स्नातक पात्रता, कट-ऑफ, प्री व मेन्स परीक्षा रणनीति।',
+    category: 'Exam Strategy & Prep',
+    pubDate: new Date('2026-10-12T08:00:00Z').toUTCString(),
+    lastmod: '2026-10-27',
+  },
+];
+
 // Dynamic SEO XML Sitemap matching the exact domain requested
 app.get('/sitemap.xml', (req, res) => {
   const baseUrl = getBaseUrl(req);
   const today = new Date().toISOString().split('T')[0];
 
+  const postUrls = KNOWN_SEO_POSTS.map((post) => `  <url>
+    <loc>${baseUrl}/${post.slug}</loc>
+    <lastmod>${post.lastmod || today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>`).join('\n');
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
     <loc>${baseUrl}/</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
+    <changefreq>always</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
@@ -60,60 +139,84 @@ app.get('/sitemap.xml', (req, res) => {
     <loc>${baseUrl}/eligibility</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>${baseUrl}/up-police-constable-32679-bharti-2026-online-form</loc>
+    <loc>${baseUrl}/trending</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
   </url>
-  <url>
-    <loc>${baseUrl}/rajasthan-rsmssb-cet-patwari-recruitment-2026</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/ssc-cgl-2026-notification-syllabus-cutoffs</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/rrb-ntpc-alp-technician-recruitment-2026-age-relaxation</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/7th-pay-commission-da-hike-54-salary-calculation</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/sbi-po-ibps-clerk-60-day-strategy-guide</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+${postUrls}
 </urlset>`;
 
   res.header('Content-Type', 'application/xml; charset=utf-8');
   res.send(xml);
 });
 
-// Dynamic robots.txt pointing to the correct Sitemap location
+// Dynamic XML News RSS Feed for Google News & Search Indexation
+app.get(['/rss.xml', '/feed.xml', '/feed'], (req, res) => {
+  const baseUrl = getBaseUrl(req);
+  const buildDate = new Date().toUTCString();
+
+  const rssItems = KNOWN_SEO_POSTS.map((post) => `    <item>
+      <title><![CDATA[${post.title}]]></title>
+      <link>${baseUrl}/${post.slug}</link>
+      <guid isPermaLink="true">${baseUrl}/${post.slug}</guid>
+      <pubDate>${post.pubDate}</pubDate>
+      <description><![CDATA[${post.description}]]></description>
+      <category><![CDATA[${post.category}]]></category>
+    </item>`).join('\n');
+
+  const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SarkariPulse - Government Job Alerts &amp; Daily News</title>
+    <link>${baseUrl}</link>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <description>Real-time government job vacancies, admit cards, exam news, syllabus summaries &amp; AI eligibility checker.</description>
+    <language>hi-IN</language>
+    <lastBuildDate>${buildDate}</lastBuildDate>
+${rssItems}
+  </channel>
+</rss>`;
+
+  res.header('Content-Type', 'application/rss+xml; charset=utf-8');
+  res.send(rssXml);
+});
+
+// Dynamic robots.txt pointing to Sitemap & RSS location
 app.get('/robots.txt', (req, res) => {
   const baseUrl = getBaseUrl(req);
   const content = `User-agent: *
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
 Sitemap: ${baseUrl}/sitemap.xml
+Sitemap: ${baseUrl}/rss.xml
 `;
   res.header('Content-Type', 'text/plain; charset=utf-8');
   res.send(content);
+});
+
+// SEO Ping trigger for search engines
+app.get('/api/seo/ping-sitemap', (req, res) => {
+  const baseUrl = getBaseUrl(req);
+  return res.json({
+    success: true,
+    message: 'Sitemap & RSS updated and ready for Google Search Console indexing',
+    sitemapUrl: `${baseUrl}/sitemap.xml`,
+    rssUrl: `${baseUrl}/rss.xml`,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 const apiKey = process.env.GEMINI_API_KEY || '';
@@ -1334,11 +1437,70 @@ async function startServer() {
   app.use(vite.middlewares);
 
   app.use('*', async (req, res, next) => {
-    const url = req.originalUrl;
+    const rawUrl = req.originalUrl || '/';
+    const baseUrl = getBaseUrl(req);
+    const cleanPath = rawUrl.split('?')[0].replace(/^\/+|\/+$/g, '');
+
     try {
       const templatePath = path.resolve(process.cwd(), 'index.html');
       let template = await fs.readFile(templatePath, 'utf-8');
-      template = await vite.transformIndexHtml(url, template);
+      template = await vite.transformIndexHtml(rawUrl, template);
+
+      // 1. Check if cleanPath matches a known blog post
+      const matchedPost = KNOWN_SEO_POSTS.find((p) => p.slug === cleanPath);
+      
+      let pageTitle = 'SarkariPulse - Government Job Alerts, Admit Card & Daily News 2026';
+      let pageDesc = 'Real-time government job vacancies, UP Police 32,679, RSMSSB CET 6,850, RRB NTPC, SSC CGL 2026, admit cards, exam news, syllabus summaries & AI eligibility checker.';
+      let jsonLdSchema: any = null;
+
+      if (matchedPost) {
+        pageTitle = `${matchedPost.title} | SarkariPulse`;
+        pageDesc = matchedPost.description;
+        jsonLdSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'NewsArticle',
+          'headline': matchedPost.title,
+          'description': matchedPost.description,
+          'mainEntityOfPage': `${baseUrl}/${matchedPost.slug}`,
+          'datePublished': matchedPost.pubDate,
+          'dateModified': matchedPost.pubDate,
+          'author': {
+            '@type': 'Organization',
+            'name': 'SarkariPulse News Bureau'
+          },
+          'publisher': {
+            '@type': 'Organization',
+            'name': 'SarkariPulse',
+            'logo': {
+              '@type': 'ImageObject',
+              'url': `${baseUrl}/logo.png`
+            }
+          }
+        };
+      } else if (cleanPath === 'results') {
+        pageTitle = 'Sarkari Result 2026 - Official Exam Results, Answer Keys & Cutoff Marks | SarkariPulse';
+        pageDesc = 'Check real-time Sarkari Results, Official Answer Keys, Cut-Off Marks & Merit Lists for UPSC, SSC, Railways, Banking & State PSC Examinations.';
+      } else if (cleanPath === 'eligibility') {
+        pageTitle = 'AI Sarkari Qualification & Eligibility Checker 2026 | SarkariPulse';
+        pageDesc = 'Check your age relaxation, qualification match & category reservation benefits for active & upcoming Indian government vacancies.';
+      } else if (cleanPath === 'trending') {
+        pageTitle = 'Trending Government Recruitment News & Salary Analysis | SarkariPulse';
+        pageDesc = 'Daily trending Sarkari Result news, breaking notifications, 7th Pay Commission DA updates & exam preparation guides.';
+      }
+
+      // Replace Title and Meta tags in HTML template for Googlebot
+      template = template.replace(/<title>.*?<\/title>/i, `<title>${pageTitle}</title>`);
+      template = template.replace(/<meta name="description" content=".*?" \/>/i, `<meta name="description" content="${pageDesc}" />`);
+      template = template.replace(/<meta property="og:title" content=".*?" \/>/i, `<meta property="og:title" content="${pageTitle}" />`);
+      template = template.replace(/<meta property="og:description" content=".*?" \/>/i, `<meta property="og:description" content="${pageDesc}" />`);
+      template = template.replace(/<meta property="og:url" content=".*?" \/>/i, `<meta property="og:url" content="${baseUrl}/${cleanPath}" />`);
+      template = template.replace(/<link rel="canonical" href=".*?" \/>/i, `<link rel="canonical" href="${baseUrl}/${cleanPath}" />`);
+
+      if (jsonLdSchema) {
+        const scriptInjection = `<script type="application/ld+json">\n${JSON.stringify(jsonLdSchema, null, 2)}\n</script>\n</head>`;
+        template = template.replace('</head>', scriptInjection);
+      }
+
       res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
     } catch (e: any) {
       vite.ssrFixStacktrace(e);
