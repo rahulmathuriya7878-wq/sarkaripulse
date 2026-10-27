@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ShieldAlert, FileText, Lock, CheckCircle2, ExternalLink, Scale } from 'lucide-react';
 
 interface PolicyModalProps {
@@ -12,9 +12,15 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
   onClose,
   initialTab = 'disclaimer',
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'disclaimer' | 'terms' | 'privacy'>(initialTab);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
@@ -91,7 +97,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
               <h4 className="font-extrabold text-slate-900 text-sm">1. Data Source & Verification</h4>
               <p>
-                All government job vacancies, admit cards, exam dates, cutoffs, syllabus breakdowns, and news updates published on SarkariPulse are curated directly from public sector gazettes and recruitment portals, including:
+                All government job vacancies, admit cards, exam dates, cutoffs, syllabus breakdowns, and news updates published on SarkariPulse are curated directly from public sector official recruitment portals and department bulletins, including:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-600 font-medium text-xs">
                 <li>Union Public Service Commission (upsc.gov.in)</li>
@@ -103,7 +109,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
               <h4 className="font-extrabold text-slate-900 text-sm">2. Candidate Verification Advisory</h4>
               <p>
-                While our editorial team endeavors to ensure 100% accuracy, candidates are strictly advised to cross-verify all details, eligibility terms, and application procedures with the gazette PDF issued by the respective recruitment commission before filling out any application or making payments.
+                While our editorial team endeavors to ensure 100% accuracy, candidates are strictly advised to cross-verify all details, eligibility terms, and application procedures with the official notification PDF issued by the respective recruitment commission before filling out any application or making payments.
               </p>
             </div>
           )}

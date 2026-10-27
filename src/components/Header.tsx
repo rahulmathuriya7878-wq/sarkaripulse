@@ -8,6 +8,7 @@ import {
   Twitter,
   Share2,
   Search,
+  Lock,
 } from 'lucide-react';
 import { JobCategory } from '../types';
 
@@ -22,6 +23,8 @@ interface HeaderProps {
   onOpenWriteBlog: () => void;
   onSelectSectorFilter?: (sector: JobCategory) => void;
   onOpenSearch?: () => void;
+  isAdminUnlocked?: boolean;
+  onLockAdmin?: () => void;
 }
 
 const SECTORS: { name: JobCategory; icon: string; hindiName: string }[] = [
@@ -47,6 +50,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenWriteBlog,
   onSelectSectorFilter,
   onOpenSearch,
+  isAdminUnlocked = false,
+  onLockAdmin,
 }) => {
   const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
 
@@ -129,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onClick={() => {
                       setIsSectorDropdownOpen(false);
                       if (onSelectSectorFilter) onSelectSectorFilter(s.name);
-                      setActiveTab('vacancies');
+                      setActiveTab('blogs');
                     }}
                     className="p-2 rounded-xl hover:bg-emerald-50 border border-slate-100 text-center transition-colors cursor-pointer space-y-1"
                   >
@@ -142,15 +147,32 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </nav>
 
-        {/* Right: Studio & Notification Buttons */}
+        {/* Right: Studio (Only when Admin Unlocked) & Notification Buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={onOpenWriteBlog}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer border border-emerald-200"
-          >
-            <PenSquare className="w-3.5 h-3.5 text-emerald-600" />
-            <span>AI ब्लॉग स्टूडियो</span>
-          </button>
+          {isAdminUnlocked && (
+            <div className="hidden sm:inline-flex items-center gap-1.5">
+              <button
+                onClick={onOpenWriteBlog}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer border border-emerald-200 shadow-2xs"
+                title="AI ब्लॉग लेखक स्टूडियो"
+              >
+                <PenSquare className="w-3.5 h-3.5 text-emerald-600" />
+                <span>AI ब्लॉग स्टूडियो</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-emerald-600 text-white font-black uppercase">स्टाफ</span>
+              </button>
+
+              {onLockAdmin && (
+                <button
+                  type="button"
+                  onClick={onLockAdmin}
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer border border-slate-200"
+                  title="एडमिन स्टूडियो छिपाएं (Hide / Lock Studio)"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
 
           {onOpenSearch && (
             <button

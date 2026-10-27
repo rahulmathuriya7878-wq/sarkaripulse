@@ -33,6 +33,7 @@ import { AIChatDrawer } from './components/AIChatDrawer';
 import { PolicyModal } from './components/PolicyModal';
 import { SearchModal } from './components/SearchModal';
 import { AdminPanel } from './components/AdminPanel';
+import { AdminAuthModal } from './components/AdminAuthModal';
 import { FastUpdatesGrid } from './components/FastUpdatesGrid';
 import { fetchLiveVacanciesFromRSS, scrapeVacancyFromUrl } from './services/jobScraperService';
 
@@ -131,6 +132,49 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+
+  // Hidden Admin / AI Blog Studio Auth State
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('sarkaripulse_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
+
+  const handleLockAdmin = () => {
+    try {
+      localStorage.removeItem('sarkaripulse_admin_auth');
+    } catch {
+      // ignore
+    }
+    setIsAdminUnlocked(false);
+    setIsAdminPanelOpen(false);
+    setIsWriteModalOpen(false);
+  };
+
+  const handleUnlockAdminSuccess = () => {
+    setIsAdminUnlocked(true);
+    setIsWriteModalOpen(true);
+  };
+
+  // Keyboard shortcut (Ctrl+Shift+A or Alt+A) & URL parameter trigger for hidden admin access
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.search.includes('admin') || window.location.hash.includes('admin')) {
+        setIsAdminAuthModalOpen(true);
+      }
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) || (e.altKey && (e.key === 'A' || e.key === 'a'))) {
+          e.preventDefault();
+          setIsAdminAuthModalOpen(true);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, []);
 
   // Alias vacancies to jobs for dynamic state management
   const vacancies = jobs;
@@ -305,6 +349,59 @@ export default function App() {
   const handlePublishNewBlog = (newPost: BlogPost) => {
     setBlogPosts([newPost, ...blogPosts]);
     setSelectedBlog(newPost);
+  };
+
+  const [isSarkariResultSyncing, setIsSarkariResultSyncing] = useState(false);
+  const [isRajasthanSyncing, setIsRajasthanSyncing] = useState(false);
+
+  const handleSyncFromSarkariResult = async () => {
+    setIsSarkariResultSyncing(true);
+    try {
+      const res = await fetch('/api/blog/sync-from-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUrl: 'https://www.sarkariresult.com/' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.posts && data.posts.length > 0) {
+          const synced = data.posts[0];
+          setBlogPosts((prev) => [synced, ...prev]);
+          setActiveTab('blogs');
+          setSelectedBlog(synced);
+          setIsAdminPanelOpen(false);
+        }
+      }
+    } catch (err) {
+      console.error('Error syncing from SarkariResult:', err);
+    } finally {
+      setIsSarkariResultSyncing(false);
+    }
+  };
+
+  const handleSyncFromRajasthanVacancy = async () => {
+    setIsRajasthanSyncing(true);
+    try {
+      const res = await fetch('/api/blog/sync-from-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUrl: 'https://rajasthanvacancy.com/' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.posts && data.posts.length > 0) {
+          const synced = data.posts[0];
+          setBlogPosts((prev) => [synced, ...prev]);
+          setActiveTab('blogs');
+          setSelectedBlog(synced);
+          setIsAdminPanelOpen(false);
+        }
+      }
+    } catch (err) {
+      console.error('Error syncing from RajasthanVacancy:', err);
+    } finally {
+      setIsRajasthanSyncing(false);
+    }
   };
 
   const openPolicyModalTab = (tab: 'disclaimer' | 'terms' | 'privacy') => {
@@ -537,13 +634,21 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenSimulateAlert={handleSimulateLiveAlert}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-        onOpenWriteBlog={() => setIsWriteModalOpen(true)}
+        onOpenWriteBlog={() => {
+          if (isAdminUnlocked) {
+            setIsWriteModalOpen(true);
+          } else {
+            setIsAdminAuthModalOpen(true);
+          }
+        }}
+        isAdminUnlocked={isAdminUnlocked}
+        onLockAdmin={handleLockAdmin}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onSelectSectorFilter={(sector) => {
           setSelectedSector(sector);
           setSelectedJob(null);
           setSelectedBlog(null);
-          setActiveTab('vacancies');
+          setActiveTab('blogs');
         }}
       />
 
@@ -653,7 +758,28 @@ export default function App() {
             </div>
           </div>
 
-          <p>© 2026 SarkariPulse News Blog. Government gazette updates & editorial coverage.</p>
+          <div className="flex items-center gap-2 text-slate-400 flex-wrap justify-center md:justify-start">
+            <p>© 2026 SarkariPulse News Blog. Official recruitment updates & editorial news coverage.</p>
+            {isAdminUnlocked ? (
+              <button
+                type="button"
+                onClick={handleLockAdmin}
+                className="text-[10px] text-amber-400 hover:text-amber-300 font-bold ml-2 inline-flex items-center gap-1 cursor-pointer bg-slate-800 px-2 py-0.5 rounded border border-amber-500/30"
+                title="व्यवस्थापक टूल्स छिपाएं (Lock / Hide from users)"
+              >
+                <span>[स्टाफ मोड सक्रिय - छिपाएं]</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsAdminAuthModalOpen(true)}
+                className="text-[10px] text-slate-600 hover:text-slate-400 ml-2 inline-flex items-center gap-1 cursor-pointer"
+                title="स्टाफ / व्यवस्थापक प्रमाणीकरण"
+              >
+                <span>[स्टाफ लॉगिन]</span>
+              </button>
+            )}
+          </div>
         </div>
       </footer>
 
@@ -684,14 +810,29 @@ export default function App() {
         onOpenNotifications={() => setIsNotifDrawerOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenQuiz={() => setIsQuizOpen(true)}
-        onOpenWriteBlog={() => setIsWriteModalOpen(true)}
+        onOpenWriteBlog={() => {
+          if (isAdminUnlocked) {
+            setIsWriteModalOpen(true);
+          } else {
+            setIsAdminAuthModalOpen(true);
+          }
+        }}
         onOpenChat={() => setIsChatOpen(true)}
-        onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
+        onOpenAdminPanel={() => {
+          if (isAdminUnlocked) {
+            setIsAdminPanelOpen(true);
+          } else {
+            setIsAdminAuthModalOpen(true);
+          }
+        }}
+        isAdminUnlocked={isAdminUnlocked}
+        onUnlockAdmin={() => setIsAdminAuthModalOpen(true)}
+        onLockAdmin={handleLockAdmin}
         onSelectSectorFilter={(s) => {
           setSelectedSector(s);
           setSelectedJob(null);
           setSelectedBlog(null);
-          setActiveTab('vacancies');
+          setActiveTab('blogs');
         }}
       />
 
@@ -782,7 +923,7 @@ export default function App() {
 
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 font-medium space-y-1">
                 <span className="font-bold block">💡 समर्थित फ़ीड स्रोत:</span>
-                <p>UPSC, SSC, Railway RRB, IBPS, NTA, PIB समाचार फ़ीड तथा प्रमुख जॉब राजपत्र।</p>
+                <p>UPSC, SSC, Railway RRB, IBPS, NTA, PIB समाचार फ़ीड तथा प्रमुख आधिकारिक भर्ती बुलेटिन।</p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
@@ -828,6 +969,17 @@ export default function App() {
         isOpen={isAdminPanelOpen} 
         onClose={() => setIsAdminPanelOpen(false)}
         onOpenWriteBlog={() => setIsWriteModalOpen(true)}
+        totalBlogs={blogPosts.length}
+        onSyncFromSarkariResult={handleSyncFromSarkariResult}
+        isSyncing={isSarkariResultSyncing}
+        onSyncFromRajasthanVacancy={handleSyncFromRajasthanVacancy}
+        isRajasthanSyncing={isRajasthanSyncing}
+        onLockAdmin={handleLockAdmin}
+      />
+      <AdminAuthModal
+        isOpen={isAdminAuthModalOpen}
+        onClose={() => setIsAdminAuthModalOpen(false)}
+        onSuccess={handleUnlockAdminSuccess}
       />
       <FloatingShareButton 
         title="SarkariPulse - Job Alerts & Updates" 

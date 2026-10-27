@@ -46,6 +46,7 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const formatImportantDate = (dateStr?: string) => {
     if (
@@ -170,8 +171,6 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
       setIsGeneratingAiReply(null);
     }
   };
-
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleShare = () => {
     setIsShareModalOpen(true);

@@ -86,6 +86,12 @@ export interface BlogComment {
   editorReply?: string;
 }
 
+export interface OfficialWebsiteInfo {
+  name: string;
+  url: string;
+  portalDescription?: string;
+}
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -107,6 +113,8 @@ export interface BlogPost {
   comments: BlogComment[];
   tags: string[];
   targetJobId?: string;
+  officialWebsite?: OfficialWebsiteInfo;
+  officialUrl?: string;
 }
 
 export interface AppNotification {

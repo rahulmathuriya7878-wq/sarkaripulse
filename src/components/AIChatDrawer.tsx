@@ -12,8 +12,6 @@ interface AIChatDrawerProps {
 }
 
 export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -25,8 +23,12 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) =
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading, isOpen]);
+
+  if (!isOpen) return null;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +129,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) =
                 <Bot className="w-4 h-4 animate-spin" />
               </div>
               <div className="p-3 bg-white text-slate-500 rounded-2xl border border-slate-200">
-                SarkariPulse AI is checking government gazettes...
+                SarkariPulse AI is checking official government notifications & updates...
               </div>
             </div>
           )}

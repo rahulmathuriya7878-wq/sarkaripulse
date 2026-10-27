@@ -12,6 +12,11 @@ import {
   Bot,
   User,
   HelpCircle,
+  Globe,
+  ExternalLink,
+  ShieldCheck,
+  CheckCircle2,
+  Lock,
 } from 'lucide-react';
 
 interface BlogDetailViewProps {
@@ -29,6 +34,12 @@ export const BlogDetailView: React.FC<BlogDetailViewProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Official Website Details
+  const officialUrl = post.officialWebsite?.url || post.officialUrl;
+  const officialName = post.officialWebsite?.name || (post.jobCategory ? `${post.jobCategory} आधिकारिक भर्ती बोर्ड` : 'आधिकारिक सरकारी भर्ती बोर्ड');
+  const officialDesc = post.officialWebsite?.portalDescription || 'भर्ती परीक्षा, परिणाम, उत्तर कुंजी व आधिकारिक अधिसूचना संबंधी सत्यापन हेतु अधिकृत सरकारी पोर्टल';
+  const officialHost = officialUrl ? officialUrl.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
 
   // Comments State
   const [comments, setComments] = useState<BlogComment[]>(post.comments || []);
@@ -111,14 +122,29 @@ export const BlogDetailView: React.FC<BlogDetailViewProps> = ({
         />
       </div>
 
-      {/* Back Button */}
-      <button
-        onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs whitespace-nowrap shrink-0"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        <span>वापस जाएं</span>
-      </button>
+      {/* Back Button and Quick Official Link Bar */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs whitespace-nowrap shrink-0"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>वापस जाएं</span>
+        </button>
+
+        {officialUrl && (
+          <a
+            href={officialUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-300 shadow-xs transition-colors group cursor-pointer"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>आधिकारिक वेबसाइट: {officialHost}</span>
+            <ExternalLink className="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </a>
+        )}
+      </div>
 
       {/* Main Blog Article Container */}
       <article className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-6">
@@ -158,6 +184,50 @@ export const BlogDetailView: React.FC<BlogDetailViewProps> = ({
           </p>
         </div>
 
+        {/* Official Website & Source Verification Callout Banner */}
+        {officialUrl && (
+          <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-slate-50 rounded-2xl border border-emerald-300 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <Globe className="w-6 h-6 text-white" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-200/80 px-2.5 py-0.5 rounded-md">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-800" />
+                    सत्यापित आधिकारिक पोर्टल (Official Source)
+                  </span>
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    100% प्रामाणिक व सुरक्षित
+                  </span>
+                </div>
+                <h3 className="text-sm sm:text-base font-black text-slate-900">
+                  {officialName}
+                </h3>
+                <p className="text-xs text-slate-600 leading-normal max-w-2xl">
+                  {officialDesc}
+                </p>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  आधिकारिक वेबसाइट लिंक: <span className="font-mono font-bold text-emerald-800">{officialUrl}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0">
+              <a
+                href={officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs transition-colors cursor-pointer group"
+              >
+                <Globe className="w-4 h-4" />
+                <span>आधिकारिक वेबसाइट पर जाएं</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Key Takeaways Callout Box */}
         {post.keyTakeaways && post.keyTakeaways.length > 0 && (
           <div className="p-5 bg-amber-50/80 rounded-2xl border border-amber-200/80 space-y-2">
@@ -182,6 +252,34 @@ export const BlogDetailView: React.FC<BlogDetailViewProps> = ({
           className="prose prose-slate max-w-none text-[18px] leading-[1.8] space-y-4 text-slate-800 font-normal border-b border-slate-100 pb-8"
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
+
+        {/* Post Bottom Official Website Verification Box */}
+        {officialUrl && (
+          <div className="p-5 bg-slate-900 text-white rounded-2xl border border-slate-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>आधिकारिक अधिसूचना व ऑनलाइन फॉर्म लिंक</span>
+              </div>
+              <h4 className="text-sm sm:text-base font-extrabold text-white">
+                {officialName}
+              </h4>
+              <p className="text-xs text-slate-300 font-normal">
+                उम्मीदवारों को सूचित किया जाता है कि ऑनलाइन फॉर्म भरने, शुल्क भुगतान एवं एडमिट कार्ड डाउनलोड केवल आधिकारिक वेबसाइट से ही करें।
+              </p>
+            </div>
+            <a
+              href={officialUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap shrink-0 group"
+            >
+              <Globe className="w-4 h-4 text-slate-950" />
+              <span>विजिट ऑफिशियल वेबसाइट ({officialHost})</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
+          </div>
+        )}
 
         {/* Social Share Bar */}
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-end gap-3 text-xs">

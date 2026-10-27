@@ -20,14 +20,14 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
 export const INITIAL_NOTIFICATIONS: AppNotification[] = [
   {
     id: 'notif-1',
-    title: '🔥 महत्वपूर्ण भर्ती अधिसूचना जारी',
-    message: 'UPSC सिविल सेवा CSE 2026 अधिसूचना 1,056 पदों पर जारी। अंतिम तिथि: 15 नवंबर।',
-    category: 'UPSC',
+    title: '🔥 रेलवे भर्ती आयु छूट आधिकारिक आदेश जारी',
+    message: 'रेल मंत्रालय ने RRB ALP, तकनीशियन व NTPC भर्तियों हेतु 3 साल की अतिरिक्त आयु छूट दी।',
+    category: 'Railways',
     type: 'Vacancy Alert',
     timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
     isRead: false,
     priority: 'Urgent',
-    targetJobId: 'job-upsc-cse-2026',
+    targetJobId: 'job-rrb-alp-2026',
   },
   {
     id: 'notif-2',
@@ -132,9 +132,9 @@ export function saveStoredPreferences(prefs: NotificationPreferences): void {
 export function getStoredBookmarks(): string[] {
   try {
     const raw = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : ['job-upsc-cse-2026', 'job-sbi-po-2026'];
+    return raw ? JSON.parse(raw) : ['job-ssc-cgl-2026', 'job-sbi-po-2026'];
   } catch (e) {
-    return ['job-upsc-cse-2026', 'job-sbi-po-2026'];
+    return ['job-ssc-cgl-2026', 'job-sbi-po-2026'];
   }
 }
 

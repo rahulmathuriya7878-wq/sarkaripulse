@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NotificationPreferences, JobCategory, AlertType } from '../types';
 import { X, Check, Bell, Mail, Smartphone, Volume2, ShieldCheck, Save, Sparkles } from 'lucide-react';
 
@@ -18,10 +18,17 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   preferences,
   onSavePreferences,
 }) => {
-  if (!isOpen) return null;
-
   const [form, setForm] = useState<NotificationPreferences>(preferences);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm(preferences);
+      setSavedSuccess(false);
+    }
+  }, [isOpen, preferences]);
+
+  if (!isOpen) return null;
 
   const toggleCategory = (cat: JobCategory) => {
     const exists = form.subscribedCategories.includes(cat);

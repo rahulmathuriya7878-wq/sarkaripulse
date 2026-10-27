@@ -7,7 +7,7 @@ import { AdSection } from './AdSection';
 interface FastUpdatesGridProps {
   regularBlogPosts: BlogPost[];
   setSelectedBlog: (post: BlogPost | null) => void;
-  setActiveTab: (tab: 'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat') => void;
+  setActiveTab: (tab: 'blogs' | 'results' | 'eligibility' | 'chat') => void;
   setSelectedJob: (job: JobAlert | null) => void;
 }
 

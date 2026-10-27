@@ -15,6 +15,10 @@ import {
   Bot,
   Flame,
   Settings,
+  Lock,
+  Unlock,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
 import { JobCategory } from '../types';
 
@@ -32,6 +36,9 @@ interface MobileMenuDrawerProps {
   onOpenChat: () => void;
   onOpenAdminPanel: () => void;
   onSelectSectorFilter?: (sector: JobCategory) => void;
+  isAdminUnlocked?: boolean;
+  onUnlockAdmin?: () => void;
+  onLockAdmin?: () => void;
 }
 
 const SECTORS: { name: JobCategory; icon: string }[] = [
@@ -60,10 +67,13 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   onOpenChat,
   onOpenAdminPanel,
   onSelectSectorFilter,
+  isAdminUnlocked = false,
+  onUnlockAdmin,
+  onLockAdmin,
 }) => {
   if (!isOpen) return null;
 
-  const handleNavigate = (tab: 'blogs' | 'vacancies' | 'results' | 'eligibility' | 'chat') => {
+  const handleNavigate = (tab: 'blogs' | 'results' | 'eligibility' | 'chat') => {
     setActiveTab(tab);
     onClose();
   };
@@ -145,24 +155,59 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           {/* AI Tools */}
           <div>
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2 px-2">
-              AI टूल्स व स्टूडियो
+              AI टूल्स व सुविधाएं
             </span>
             <div className="space-y-1">
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenWriteBlog();
-                }}
-                className="w-full p-2.5 rounded-xl text-left flex items-center justify-between hover:bg-emerald-50 transition-colors cursor-pointer bg-slate-50 text-slate-900 border border-slate-200"
-              >
-                <div className="flex items-center gap-2.5">
-                  <PenSquare className="w-4 h-4 text-emerald-700" />
-                  <span className="font-bold">AI ब्लॉग लेखक स्टूडियो</span>
+              {/* Only visible when Admin is Unlocked */}
+              {isAdminUnlocked && (
+                <div className="space-y-1 mb-2">
+                  <div className="px-2 py-1 mb-1 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-emerald-800 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      <span>स्टाफ / व्यवस्थापक मोड</span>
+                    </span>
+                    {onLockAdmin && (
+                      <button
+                        type="button"
+                        onClick={onLockAdmin}
+                        className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
+                      >
+                        छिपाएं (Lock)
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onOpenWriteBlog();
+                    }}
+                    className="w-full p-2.5 rounded-xl text-left flex items-center justify-between hover:bg-emerald-50 transition-colors cursor-pointer bg-emerald-50/50 text-slate-900 border border-emerald-300 shadow-2xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <PenSquare className="w-4 h-4 text-emerald-700" />
+                      <span className="font-bold text-emerald-950">AI ब्लॉग लेखक स्टूडियो</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-white uppercase bg-emerald-700 px-2 py-0.5 rounded">
+                      स्टाफ
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onOpenAdminPanel();
+                    }}
+                    className="w-full p-2.5 rounded-xl text-left flex items-center justify-between hover:bg-emerald-50 transition-colors cursor-pointer bg-slate-50 text-slate-900 border border-slate-200"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Settings className="w-4 h-4 text-emerald-700" />
+                      <span className="font-bold">प्रशासनिक पैनल (Admin Panel)</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </button>
                 </div>
-                <span className="text-[10px] font-extrabold text-emerald-700 uppercase bg-emerald-100 px-2 py-0.5 rounded">
-                  ब्लॉग
-                </span>
-              </button>
+              )}
 
               <button
                 onClick={() => {
@@ -190,20 +235,6 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 <div className="flex items-center gap-2.5">
                   <Bot className="w-4 h-4 text-emerald-400" />
                   <span className="font-bold">सरकारी AI सलाहकार</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </button>
-
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenAdminPanel();
-                }}
-                className="w-full p-2.5 rounded-xl text-left flex items-center justify-between hover:bg-emerald-50 transition-colors cursor-pointer bg-slate-50 text-slate-900 border border-slate-200"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Settings className="w-4 h-4 text-emerald-700" />
-                  <span className="font-bold">प्रशासनिक पैनल (Admin Panel)</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
@@ -252,9 +283,35 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 bg-slate-900 text-slate-300 text-[11px] border-t border-slate-800 text-center font-semibold">
-          <p>© 2026 सरकारीपल्स समाचार व जॉब पोर्टल</p>
+        {/* Footer with subtle staff trigger */}
+        <div className="p-4 bg-slate-900 text-slate-300 text-[11px] border-t border-slate-800 flex items-center justify-between font-semibold">
+          <p>© 2026 सरकारीपल्स</p>
+          {isAdminUnlocked ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (onLockAdmin) onLockAdmin();
+              }}
+              className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer font-bold"
+              title="एडमिन स्टूडियो छिपाएं"
+            >
+              <Lock className="w-3 h-3" />
+              <span>स्टाफ लॉक</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (onUnlockAdmin) onUnlockAdmin();
+              }}
+              className="text-[10px] text-slate-600 hover:text-slate-400 flex items-center gap-1 cursor-pointer"
+              title="स्टाफ / व्यवस्थापक प्रमाणीकरण"
+            >
+              <KeyRound className="w-3 h-3" />
+              <span>स्टाफ</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

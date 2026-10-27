@@ -9,8 +9,6 @@ interface DailyQuizModalProps {
 }
 
 export const DailyQuizModal: React.FC<DailyQuizModalProps> = ({ isOpen, onClose, newsItems }) => {
-  if (!isOpen) return null;
-
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
