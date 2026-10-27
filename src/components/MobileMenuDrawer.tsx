@@ -31,7 +31,6 @@ interface MobileMenuDrawerProps {
   bookmarksCount: number;
   onOpenNotifications: () => void;
   onOpenSettings: () => void;
-  onOpenQuiz: () => void;
   onOpenWriteBlog: () => void;
   onOpenChat: () => void;
   onOpenAdminPanel: () => void;
@@ -62,7 +61,6 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   bookmarksCount,
   onOpenNotifications,
   onOpenSettings,
-  onOpenQuiz,
   onOpenWriteBlog,
   onOpenChat,
   onOpenAdminPanel,
@@ -208,22 +206,6 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                   </button>
                 </div>
               )}
-
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenQuiz();
-                }}
-                className="w-full p-2.5 rounded-xl text-left flex items-center justify-between hover:bg-amber-50 transition-colors cursor-pointer bg-slate-50 text-slate-900 border border-slate-200"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span className="font-bold">दैनिक AI GK क्विज</span>
-                </div>
-                <span className="text-[10px] font-extrabold text-amber-900 uppercase bg-amber-100 px-2 py-0.5 rounded">
-                  5 प्रश्न
-                </span>
-              </button>
 
               <button
                 onClick={() => {

@@ -28,7 +28,6 @@ import { MobileMenuDrawer } from './components/MobileMenuDrawer';
 import { NotificationDrawer } from './components/NotificationDrawer';
 import { NotificationSettingsModal } from './components/NotificationSettingsModal';
 import { EligibilityChecker } from './components/EligibilityChecker';
-import { DailyQuizModal } from './components/DailyQuizModal';
 import { AIChatDrawer } from './components/AIChatDrawer';
 import { PolicyModal } from './components/PolicyModal';
 import { SearchModal } from './components/SearchModal';
@@ -128,7 +127,6 @@ export default function App() {
   // Active Toast Alert
   const [activeToast, setActiveToast] = useState<AppNotification | null>(null);
 
-  const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
@@ -809,7 +807,6 @@ export default function App() {
         bookmarksCount={bookmarks.length}
         onOpenNotifications={() => setIsNotifDrawerOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenWriteBlog={() => {
           if (isAdminUnlocked) {
             setIsWriteModalOpen(true);
@@ -869,12 +866,6 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         preferences={preferences}
         onSavePreferences={handleSavePreferences}
-      />
-
-      <DailyQuizModal
-        isOpen={isQuizOpen}
-        onClose={() => setIsQuizOpen(false)}
-        newsItems={news}
       />
 
       <AIChatDrawer

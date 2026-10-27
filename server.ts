@@ -19,6 +19,103 @@ const rssParser = new Parser({
 const app = express();
 app.use(express.json());
 
+// Helper to determine the accurate base URL for Google Search Console & SEO
+const getBaseUrl = (req: express.Request): string => {
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/$/, '');
+  }
+  if (process.env.SITE_URL) {
+    return process.env.SITE_URL.replace(/\/$/, '');
+  }
+  const forwardedHost = req.headers['x-forwarded-host'];
+  const host = typeof forwardedHost === 'string' ? forwardedHost.split(',')[0].trim() : req.get('host') || '';
+  if (host && !host.includes('localhost') && !host.includes('127.0.0.1') && !host.includes('run.app')) {
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    const proto = typeof forwardedProto === 'string' ? forwardedProto.split(',')[0].trim() : req.protocol || 'https';
+    return `${proto}://${host}`;
+  }
+  return 'https://sarkaripulse.vercel.app';
+};
+
+// Dynamic SEO XML Sitemap matching the exact domain requested
+app.get('/sitemap.xml', (req, res) => {
+  const baseUrl = getBaseUrl(req);
+  const today = new Date().toISOString().split('T')[0];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/results</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/eligibility</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/up-police-constable-32679-bharti-2026-online-form</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/rajasthan-rsmssb-cet-patwari-recruitment-2026</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/ssc-cgl-2026-notification-syllabus-cutoffs</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/rrb-ntpc-alp-technician-recruitment-2026-age-relaxation</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/7th-pay-commission-da-hike-54-salary-calculation</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/sbi-po-ibps-clerk-60-day-strategy-guide</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>`;
+
+  res.header('Content-Type', 'application/xml; charset=utf-8');
+  res.send(xml);
+});
+
+// Dynamic robots.txt pointing to the correct Sitemap location
+app.get('/robots.txt', (req, res) => {
+  const baseUrl = getBaseUrl(req);
+  const content = `User-agent: *
+Allow: /
+
+Sitemap: ${baseUrl}/sitemap.xml
+`;
+  res.header('Content-Type', 'text/plain; charset=utf-8');
+  res.send(content);
+});
+
 const apiKey = process.env.GEMINI_API_KEY || '';
 
 const ai = new GoogleGenAI({
@@ -288,110 +385,164 @@ Return a JSON object listing 4 top matching government job roles they are eligib
   }
 });
 
-// AI Daily GK & Current Affairs Quiz Endpoint
-app.post('/api/gemini/quiz', async (req, res) => {
-  try {
-    const { newsItems } = req.body;
+// Sarkari Knowledge Engine Fallback for Chat
+function getSarkariKnowledgeFallback(userQuery: string): string {
+  const query = (userQuery || '').toLowerCase();
 
-    const prompt = `Based on recent government job notifications, railway updates, cabinet decisions, national economic policies, and defense news:
-Generate 5 high-yield multiple-choice questions (MCQs) for competitive exam aspirants (UPSC Prelims, SSC CGL, Bank PO, Railways).
+  if (query.includes('police') || query.includes('पुलिस') || query.includes('uppbpb') || query.includes('constable')) {
+    return `📋 **उत्तर प्रदेश पुलिस (UP Police) नागरिक आरक्षी भर्ती 2026 महत्वपूर्ण विवरण:**
 
-News Context: ${JSON.stringify(newsItems || [])}`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              id: { type: Type.INTEGER },
-              question: { type: Type.STRING },
-              options: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-              },
-              correctOptionIndex: { type: Type.INTEGER },
-              explanation: { type: Type.STRING },
-              examRelevance: { type: Type.STRING },
-            },
-            required: ['id', 'question', 'options', 'correctOptionIndex', 'explanation', 'examRelevance'],
-          },
-        },
-      },
-    });
-
-    const quiz = JSON.parse(response.text || '[]');
-    return res.json({ quiz });
-  } catch (error: any) {
-    console.log('Gemini quiz generation quota limit reached, using fallback.');
-    return res.json({
-      quiz: [
-        {
-          id: 1,
-          question: 'हाल ही में जारी सरकारी अधिसूचना के अनुसार, परीक्षा की तैयारी का सबसे प्रभावी तरीका क्या है?',
-          options: ['केवल पिछले वर्ष के प्रश्न', 'नियमित मॉक टेस्ट', 'सिलेबस का गहन अध्ययन', 'उपरोक्त सभी'],
-          correctOptionIndex: 3,
-          explanation: 'परीक्षा में सफलता के लिए पिछले वर्षों के प्रश्न, मॉक टेस्ट और सिलेबस का गहन अध्ययन तीनों ही महत्वपूर्ण हैं।',
-          examRelevance: 'सभी प्रतियोगी परीक्षाएं'
-        },
-        {
-          id: 2,
-          question: 'महंगाई भत्ते (DA) में बढ़ोतरी का निर्णय किसके द्वारा लिया जाता है?',
-          options: ['वित्त मंत्रालय', 'केंद्रीय कैबिनेट', 'भारतीय रिजर्व बैंक', 'नीति आयोग'],
-          correctOptionIndex: 1,
-          explanation: 'महंगाई भत्ते (DA) में संशोधन का निर्णय केंद्रीय कैबिनेट द्वारा लिया जाता है।',
-          examRelevance: 'SSC, UPSC, Banking'
-        }
-      ]
-    });
+• **कुल पद:** 32,679 नागरिक पुलिस आरक्षी (Constable)
+• **शैक्षणिक योग्यता:** 10+2 (इंटरमीडिएट) भारत के किसी मान्यता प्राप्त बोर्ड से उत्तीर्ण।
+• **आयु सीमा:** पुरुष: 18 से 25 वर्ष, महिला: 18 से 28 वर्ष (आरक्षित वर्गों SC/ST/OBC को 5 वर्ष की नियमानुसार छूट)।
+• **लिखित परीक्षा पैटर्न:** 300 अंकों की OMR परीक्षा (150 प्रश्न - सामान्य ज्ञान, सामान्य हिंदी, संख्यात्मक व मानसिक योग्यता, रीजनिंग)। प्रत्येक गलत उत्तर पर 0.5 अंक नेगेटिव मार्किंग।
+• **शारीरिक मानक (PST/PET):**
+  - पुरुष ऊंचाई: 168 सेमी (ST: 160 सेमी) | सीना: 79-84 सेमी
+  - पुरुष दौड़: 4.8 किमी (25 मिनट में)
+  - महिला ऊंचाई: 152 सेमी | दौड़: 2.4 किमी (14 मिनट में)
+• **आधिकारिक वेबसाइट:** [uppbpb.gov.in](https://uppbpb.gov.in/)`;
   }
-});
+
+  if (query.includes('railway') || query.includes('रेलवे') || query.includes('rrb') || query.includes('ntpc') || query.includes('alp') || query.includes('technician')) {
+    return `🚆 **रेलवे भर्ती बोर्ड (RRB NTPC, ALP व तकनीशियन) भर्ती विवरण:**
+
+• **आयु सीमा व छूट:** रेलवे बोर्ड द्वारा कोविड अंतराल के दृष्टिगत सभी श्रेणियों को ऊपरी आयु सीमा में **3 वर्ष की विशेष अतिरिक्त छूट** प्रदान की गई है।
+• **चयन प्रक्रिया चरण:**
+  1. CBT-1 (कंप्यूटर आधारित स्क्रीनिंग टेस्ट - सामान्य जागरूकता, गणित, रीजनिंग)
+  2. CBT-2 (मुख्य मेरिट आधारित परीक्षा)
+  3. साइको / टाइपिंग टेस्ट (पद की आवश्यकता अनुसार)
+  4. दस्तावेज़ सत्यापन (DV) एवं गहन मेडिकल परीक्षण
+• **वेतनमान:** 7वें वेतन आयोग अनुसार लेवल 2 से लेवल 6 (₹19,900 से ₹35,400 मूल वेतन + DA व भत्ते)।
+• **आधिकारिक पोर्टल:** [indianrailways.gov.in](https://indianrailways.gov.in/) एवं संबंधित क्षेत्रीय RRB वेबसाइट्स।`;
+  }
+
+  if (query.includes('ssc') || query.includes('cgl') || query.includes('chsl') || query.includes('mts')) {
+    return `💼 **कर्मचारी चयन आयोग (SSC CGL / CHSL 2026) विवरण व पैटर्न:**
+
+• **योग्यता:** SSC CGL हेतु मान्यता प्राप्त विश्वविद्यालय से स्नातक डिग्री; CHSL हेतु 12वीं पास।
+• **आयु सीमा:** 18 से 30/32 वर्ष (पद अनुसार)। OBC को 3 वर्ष, SC/ST को 5 वर्ष, PwBD को 10 वर्ष की छूट।
+• **CGL टियर-1 पैटर्न (200 अंक):**
+  - रीजनिंग (25 प्रश्न - 50 अंक)
+  - सामान्य ज्ञान (25 प्रश्न - 50 अंक)
+  - गणित (25 प्रश्न - 50 अंक)
+  - इंग्लिश कॉम्प्रिहेंशन (25 प्रश्न - 50 अंक)
+  - समय: 60 मिनट, नेगेटिव मार्किंग: 0.50 अंक।
+• **CGL टियर-2:** पेपर-I अनिवार्य (गणित, रीजनिंग, इंग्लिश, सामान्य अध्ययन व कंप्यूटर ज्ञान)।
+• **आधिकारिक पोर्टल:** [ssc.gov.in](https://ssc.gov.in/) पर OTR अनिवार्य।`;
+  }
+
+  if (query.includes('rajasthan') || query.includes('राजस्थान') || query.includes('rsmssb') || query.includes('cet') || query.includes('patwari') || query.includes('पटवारी')) {
+    return `📍 **राजस्थान RSMSSB CET व पटवारी भर्ती 2026 दिशानिर्देश:**
+
+• **कुल पद:** 6,850 पद (सीईटी सीनियर सेकेंडरी व स्नातक स्तर तथा राजस्व पटवारी)।
+• **शैक्षणिक योग्यता:** 12वीं पास / स्नातक + RSCIT कंप्यूटर डिप्लोमा अथवा समकक्ष प्रमाण पत्र।
+• **आयु सीमा:** 18 से 40 वर्ष (राजस्थान के आरक्षित वर्गों के पुरुषों को 5 वर्ष तथा महिलाओं को 10 वर्ष की छूट)।
+• **आवेदन प्रक्रिया:** SSO Rajasthan पोर्टल ([sso.rajasthan.gov.in](https://sso.rajasthan.gov.in/)) पर One Time Registration (OTR) के माध्यम से।
+• **परीक्षा योजना:** 300 अंक (150 प्रश्न - राजस्थान का इतिहास, भूगोल, कला-संस्कृति, सामान्य ज्ञान, हिंदी-इंग्लिश व रीजनिंग)। 1/3 नेगेटिव मार्किंग।
+• **आधिकारिक पोर्टल:** [rsmssb.rajasthan.gov.in](https://rsmssb.rajasthan.gov.in/)`;
+  }
+
+  if (query.includes('da') || query.includes('वेतन') || query.includes('salary') || query.includes('pay') || query.includes('भत्ता') || query.includes('arrear')) {
+    return `💰 **7वां वेतन आयोग - महंगाई भत्ता (DA Hike) एवं वेतन गणना:**
+
+• **वर्तमान DA दर:** 53% से 54% (AICPI-IW औद्योगिक श्रमिकों के मूल्य सूचकांक के आधार पर)।
+• **वेतन गणना सूत्र:** 
+  - कुल मासिक वेतन = (मूल वेतन Basic Pay) + (Basic Pay × DA%) + HRA (मकान किराया भत्ता 9%/18%/27%) + परिवहन भत्ता (TA)।
+• **एरियर:** DA वृद्धि की घोषणा के बाद पिछले महीनों का एरियर कर्मचारियों व पेंशनरों के खातों में एकमुश्त जमा किया जाता है।`;
+  }
+
+  if (query.includes('bank') || query.includes('बैंक') || query.includes('ibps') || query.includes('sbi') || query.includes('po') || query.includes('clerk')) {
+    return `🏦 **बैंकिंग भर्ती (SBI PO / IBPS Clerk & PO 2026):**
+
+• **पात्रता:** किसी भी विषय में स्नातक (B.A., B.Sc., B.Com., B.Tech सभी पात्र)।
+• **आयु सीमा:** 20 से 28/30 वर्ष (OBC: 3 वर्ष, SC/ST: 5 वर्ष छूट)।
+• **प्रारंभिक परीक्षा (Prelims):** 100 प्रश्न (इंग्लिश: 30, क्वांटिटेटिव एप्टीट्यूड: 35, रीजनिंग: 35)। समय: 60 मिनट (20 मिनट प्रति सेक्शन)।
+• **मुख्य परीक्षा (Mains):** रीजनिंग, डेटा एनालिसिस, सामान्य अर्थव्यवस्था/बैंकिंग अवेयरनेस, इंग्लिश व निबंध लेखन।
+• **आधिकारिक पोर्टल:** [ibps.in](https://www.ibps.in/) एवं [sbi.co.in/careers](https://sbi.co.in/careers)`;
+  }
+
+  if (query.includes('age') || query.includes('आयु') || query.includes('relaxation') || query.includes('छूट') || query.includes('आरक्षण')) {
+    return `⚖️ **सरकारी नौकरियों में वर्गवार आयु सीमा में छूट के नियम:**
+
+• **सामान्य / अनारक्षित (UR/General):** कोई अतिरिक्त छूट नहीं (अधिसूचना में निर्धारित अधिकतम आयु)।
+• **अन्य पिछड़ा वर्ग (OBC Non-Creamy Layer):** 3 वर्ष की अतिरिक्त छूट।
+• **अनुसूचित जाति / जनजाति (SC/ST):** 5 वर्ष की अतिरिक्त छूट।
+• **दिव्यांगजन (PwBD):** 10 वर्ष (PwBD + OBC: 13 वर्ष, PwBD + SC/ST: 15 वर्ष)।
+• **भूतपूर्व सैनिक (Ex-Servicemen):** सैन्य सेवा अवधि + 3 वर्ष की छूट।
+• **नोट:** आरक्षित श्रेणी का लाभ प्राप्त करने हेतु सक्षम प्राधिकारी द्वारा जारी वैध जाति एवं आय प्रमाण पत्र होना अनिवार्य है।`;
+  }
+
+  return `🏛️ **सरकारीपल्स करियर व भर्ती परामर्श सेवा:**
+
+आपके प्रश्न के संदर्भ में महत्वपूर्ण दिशानिर्देश:
+1. **पात्रता व अधिसूचना:** किसी भी सरकारी भर्ती हेतु ऑनलाइन आवेदन करने से पहले विभाग द्वारा जारी विस्तृत विज्ञापन PDF में निर्धारित कट-ऑफ तिथि के अनुसार योग्यता व आयु की जांच करें।
+2. **One Time Registration (OTR):** UPSC, SSC, RRB व राजस्थान SSO पोर्टलों पर OTR प्रोफाइल अद्यतन रखें ताकि आवेदन में कोई त्रुटि न हो।
+3. **सिलेबस व पिछले वर्षों के पेपर:** पिछले 5 वर्षों के प्रश्न पत्रों का अभ्यास व मॉक टेस्ट निरंतर हल करना सफलता की सर्वोत्तम रणनीति है।
+4. **आधिकारिक सत्यापन:** किसी भी परीक्षा या परिणाम संबंधी सूचना का सत्यापन हमेशा संबंधित आयोग के आधिकारिक वेब पोर्टल से ही करें।
+
+यदि आप किसी विशिष्ट भर्ती (जैसे UP Police, SSC CGL, RRB NTPC, या राजस्थान पटवारी) के बारे में जानना चाहते हैं, तो कृपया उसका नाम लिखकर पूछें!`;
+}
 
 // AI Sarkari Assistant Chat Endpoint
 app.post('/api/gemini/chat', async (req, res) => {
-  try {
-    const { message, history } = req.body;
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
-    }
+  const { message, history } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
 
-    const contents = [];
-    if (history && Array.isArray(history)) {
-      for (const h of history) {
-        contents.push({
-          role: h.role === 'user' ? 'user' : 'model',
-          parts: [{ text: h.text }],
-        });
-      }
+  const contents = [];
+  if (history && Array.isArray(history)) {
+    for (const h of history) {
+      contents.push({
+        role: h.role === 'user' ? 'user' : 'model',
+        parts: [{ text: h.text }],
+      });
     }
-    contents.push({
-      role: 'user',
-      parts: [{ text: message }],
-    });
+  }
+  contents.push({
+    role: 'user',
+    parts: [{ text: message }],
+  });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: contents,
-      config: {
-        systemInstruction: `You are SarkariPulse AI - an expert, trustworthy, and empathetic news blogger & advisor for government job aspirants (UPSC, SSC, IBPS, RRB, State PSC, Defense, Teaching, AIIMS).
+  const systemInstruction = `You are SarkariPulse AI - an expert, trustworthy, and empathetic news blogger & advisor for government job aspirants (UPSC, SSC, IBPS, RRB, State PSC, Defense, Teaching, AIIMS).
 Your job is to provide accurate information on:
 - Vacancy qualification criteria, age limits, category relaxation.
 - Exam patterns, syllabus breakdowns, negative marking schemes.
 - Admit card release steps, answer key challenge processes, cut-off trends.
 - Official application portal guidance.
-Keep responses well-structured, clear, friendly, and news-blog style. Use bullet points and clean formatting.`,
-      },
-    });
+Keep responses well-structured, clear, friendly, and news-blog style. Use bullet points and clean formatting.`;
 
-    return res.json({ text: response.text });
+  // Attempt 1: Default Primary Model
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: contents,
+      config: { systemInstruction },
+    });
+    if (response.text) {
+      return res.json({ text: response.text });
+    }
   } catch (error: any) {
-    console.error('Error in /api/gemini/chat:', error);
-    return res.status(500).json({ error: error.message || 'Chat service error' });
+    console.warn('Gemini 3.8 flash error or quota limit:', error?.message || error);
   }
+
+  // Attempt 2: Lightweight Alternative Model
+  try {
+    const responseLite = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents: contents,
+      config: { systemInstruction },
+    });
+    if (responseLite.text) {
+      return res.json({ text: responseLite.text });
+    }
+  } catch (liteError: any) {
+    console.warn('Gemini 3.1 flash-lite error or quota limit:', liteError?.message || liteError);
+  }
+
+  // Final Intelligent Fallback: Built-in Sarkari Knowledge Assistant
+  const fallbackText = getSarkariKnowledgeFallback(message);
+  return res.json({ text: fallbackText });
 });
 
 // RSS Feed Parser & Automated Job-Scraping Service Endpoint

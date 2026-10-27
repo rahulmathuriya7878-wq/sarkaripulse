@@ -1,21 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ais-dev-fm7kcuwl4osgsqex3zr64i-313809848943.asia-east1.run.app/</loc>
-    <lastmod>2026-10-21</lastmod>
+    <loc>https://sarkaripulse.vercel.app/</loc>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ais-dev-fm7kcuwl4osgsqex3zr64i-313809848943.asia-east1.run.app/results</loc>
-    <lastmod>2026-10-21</lastmod>
+    <loc>https://sarkaripulse.vercel.app/results</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sarkaripulse.vercel.app/eligibility</loc>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ais-dev-fm7kcuwl4osgsqex3zr64i-313809848943.asia-east1.run.app/eligibility</loc>
-    <lastmod>2026-10-21</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://sarkaripulse.vercel.app/up-police-constable-32679-bharti-2026-online-form</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sarkaripulse.vercel.app/rajasthan-rsmssb-cet-patwari-recruitment-2026</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sarkaripulse.vercel.app/ssc-cgl-2026-notification-syllabus-cutoffs</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sarkaripulse.vercel.app/rrb-ntpc-alp-technician-recruitment-2026-age-relaxation</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sarkaripulse.vercel.app/7th-pay-commission-da-hike-54-salary-calculation</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sarkaripulse.vercel.app/sbi-po-ibps-clerk-60-day-strategy-guide</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>

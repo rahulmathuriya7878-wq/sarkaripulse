@@ -4,7 +4,7 @@ import { X, ShieldAlert, FileText, Lock, CheckCircle2, ExternalLink, Scale } fro
 interface PolicyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'disclaimer' | 'terms' | 'privacy';
+  initialTab?: 'disclaimer' | 'terms' | 'privacy' | 'liability';
 }
 
 export const PolicyModal: React.FC<PolicyModalProps> = ({
@@ -12,7 +12,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
   onClose,
   initialTab = 'disclaimer',
 }) => {
-  const [activeTab, setActiveTab] = useState<'disclaimer' | 'terms' | 'privacy'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'disclaimer' | 'terms' | 'privacy' | 'liability'>(initialTab);
 
   useEffect(() => {
     if (isOpen) {
@@ -31,7 +31,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
             <Scale className="w-5 h-5 text-emerald-400" />
             <div>
               <h3 className="font-extrabold text-base text-white">Legal & General Policies (नियम व नीतियाँ)</h3>
-              <p className="text-xs text-slate-400">Disclaimer, Terms of Use (नीति नियम) & Privacy Policy</p>
+              <p className="text-xs text-slate-400">Disclaimer, Terms of Use, Privacy Policy & Liability</p>
             </div>
           </div>
           <button
@@ -43,10 +43,10 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
         </div>
 
         {/* Tab Header */}
-        <div className="flex items-center border-b border-slate-200 bg-slate-50 px-6 gap-2 text-xs font-bold">
+        <div className="flex items-center border-b border-slate-200 bg-slate-50 px-6 gap-2 text-xs font-bold overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('disclaimer')}
-            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'disclaimer'
                 ? 'border-emerald-600 text-emerald-700 bg-white font-extrabold'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -57,8 +57,20 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('liability')}
+            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'liability'
+                ? 'border-emerald-600 text-emerald-700 bg-white font-extrabold'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>दायित्व की सीमा एवं सूचना की शुद्धता</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('terms')}
-            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'terms'
                 ? 'border-emerald-600 text-emerald-700 bg-white font-extrabold'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -70,7 +82,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
           <button
             onClick={() => setActiveTab('privacy')}
-            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+            className={`py-3 px-4 border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'privacy'
                 ? 'border-emerald-600 text-emerald-700 bg-white font-extrabold'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -111,6 +123,50 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               <p>
                 While our editorial team endeavors to ensure 100% accuracy, candidates are strictly advised to cross-verify all details, eligibility terms, and application procedures with the official notification PDF issued by the respective recruitment commission before filling out any application or making payments.
               </p>
+            </div>
+          )}
+
+          {activeTab === 'liability' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-950 font-medium space-y-2">
+                <div className="flex items-center gap-2 font-extrabold text-emerald-900 text-xs uppercase">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>दायित्व की सीमा एवं सूचना की शुद्धता (Limitation of Liability & Accuracy)</span>
+                </div>
+                <p className="text-xs">
+                  सरकारीपल्स (SarkariPulse) एक गैर-सरकारी, स्वतंत्र शिक्षा व रोजगार समाचार विश्लेषण पोर्टल है। इसका उद्देश्य प्रतियोगी परीक्षाओं के अभ्यर्थियों तक समय पर प्रामाणिक व उपयोगी भर्ती विवरण पहुँचाना है।
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <h5 className="font-bold text-slate-900 text-xs mb-1">1. सूचना की शुद्धता का प्रयास (Commitment to Accuracy)</h5>
+                  <p className="text-slate-600 text-xs">
+                    हमारे संपादकीय दल द्वारा समस्त अधिसूचनाएं, पद संख्या, शैक्षणिक योग्यता, वेतनमान, आयु सीमा व महत्वपूर्ण तिथियों का संकलन संबंधित सरकारी भर्ती बोर्डों, आयोगों (जैसे UPSC, SSC, RRB, IBPS, राज्य लोक सेवा आयोगों) की आधिकारिक वेबसाइटों से पूर्ण सावधानी व निष्ठापूर्वक किया जाता है।
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <h5 className="font-bold text-slate-900 text-xs mb-1">2. दायित्व की कानूनी सीमा (Limitation of Liability)</h5>
+                  <p className="text-slate-600 text-xs">
+                    यद्यपि सूचना को अद्यतन व त्रुटिरहित रखने का हरसंभव प्रयास किया जाता है, तथापि मानवीय भूल, मुद्रण दोष अथवा संबंधित भर्ती बोर्ड द्वारा अंतिम क्षणों में किए गए संशोधनों/शुद्धिपत्रों के कारण होने वाली किसी भी विसंगति या प्रत्यक्ष/अप्रत्यक्ष हानि के लिए सरकारीपल्स अथवा इसके संचालक किसी भी रूप में कानूनी रूप से उत्तरदायी नहीं होंगे।
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <h5 className="font-bold text-slate-900 text-xs mb-1">3. आधिकारिक स्रोतों से अनिवार्य सत्यापन (Mandatory Cross-Verification)</h5>
+                  <p className="text-slate-600 text-xs">
+                    सभी उम्मीदवारों और पाठकों से यह सख्त अनुरोध है कि किसी भी पद हेतु ऑनलाइन फॉर्म भरने, आयु सीमा/आरक्षण का दावा करने अथवा आवेदन शुल्क का ऑनलाइन भुगतान करने से पूर्व संबंधित विभाग/आयोग के आधिकारिक पोर्टल पर जारी मूल विज्ञापन (Official Notification PDF) का अध्ययन व पुष्टि अवश्य कर लें।
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <h5 className="font-bold text-slate-900 text-xs mb-1">4. बाह्य वेब लिंक्स व थर्ड पार्टी पोर्टल्स (External Links)</h5>
+                  <p className="text-slate-600 text-xs">
+                    पोर्टल पर दिए गए आधिकारिक वेबसाइट व आवेदन लिंक्स केवल अभ्यर्थियों की सुगमता हेतु उपलब्ध कराए गए हैं। इन बाह्य सरकारी या बैंक पोर्टल्स की सामग्री, सर्वर उपलब्धता अथवा भुगतान गेटवे सुरक्षा पर हमारा कोई सीधा नियंत्रण नहीं है।
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
