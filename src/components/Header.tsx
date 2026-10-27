@@ -25,6 +25,7 @@ interface HeaderProps {
   onOpenSearch?: () => void;
   isAdminUnlocked?: boolean;
   onLockAdmin?: () => void;
+  onOpenUrlInspection?: () => void;
 }
 
 const SECTORS: { name: JobCategory; icon: string; hindiName: string }[] = [
@@ -52,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   isAdminUnlocked = false,
   onLockAdmin,
+  onOpenUrlInspection,
 }) => {
   const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
 
@@ -172,6 +174,17 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
             </div>
+          )}
+
+          {onOpenUrlInspection && (
+            <button
+              onClick={onOpenUrlInspection}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors cursor-pointer hidden md:inline-flex items-center gap-1.5 shadow-2xs"
+              title="Google Search Console URL Inspection"
+            >
+              <Search className="w-3.5 h-3.5 text-amber-700" />
+              <span>GSC URL Audit</span>
+            </button>
           )}
 
           {onOpenSearch && (

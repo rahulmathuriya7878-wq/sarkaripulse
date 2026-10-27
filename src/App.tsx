@@ -36,6 +36,7 @@ import { AdminAuthModal } from './components/AdminAuthModal';
 import { FastUpdatesGrid } from './components/FastUpdatesGrid';
 import { JobTrendsWidget } from './components/JobTrendsWidget';
 import { SEOHead } from './components/SEOHead';
+import { UrlInspectionModal } from './components/UrlInspectionModal';
 import { fetchLiveVacanciesFromRSS, scrapeVacancyFromUrl } from './services/jobScraperService';
 
 import {
@@ -132,6 +133,7 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [isUrlInspectOpen, setIsUrlInspectOpen] = useState(false);
 
   // Hidden Admin / AI Blog Studio Auth State
   const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(() => {
@@ -745,6 +747,7 @@ export default function App() {
         isAdminUnlocked={isAdminUnlocked}
         onLockAdmin={handleLockAdmin}
         onOpenSearch={() => setIsSearchModalOpen(true)}
+        onOpenUrlInspection={() => setIsUrlInspectOpen(true)}
         onSelectSectorFilter={(sector) => {
           setSelectedSector(sector);
           setSelectedJob(null);
@@ -1078,6 +1081,11 @@ export default function App() {
         isOpen={isAdminAuthModalOpen}
         onClose={() => setIsAdminAuthModalOpen(false)}
         onSuccess={handleUnlockAdminSuccess}
+      />
+      <UrlInspectionModal
+        isOpen={isUrlInspectOpen}
+        onClose={() => setIsUrlInspectOpen(false)}
+        initialSlug={selectedBlog ? selectedBlog.slug : (activeTab === 'results' ? 'results' : (activeTab === 'eligibility' ? 'eligibility' : ''))}
       />
       <FloatingShareButton 
         title="SarkariPulse - Job Alerts & Updates" 
